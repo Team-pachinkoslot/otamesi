@@ -127,7 +127,7 @@
 </div>
 
 <script>
-    // パラメータ設定
+// パラメータ設定
     const RATES = {
         NORMAL: 319.7,     // 通常時の大当り確率
         ST: 99.4,          // ST中の大当り確率
@@ -136,9 +136,8 @@
     };
 
     // ==========================================
-    // 固定出目パターンの定義
+    // 固定出目の定義（停止目標）
     // ==========================================
-    // 1. 完全ハズレ時の出目リスト（テンパイしないバラケ目）
     const FIXED_LOSE_PATTERNS = [
         [1, 2, 3],
         [2, 4, 6],
@@ -149,7 +148,6 @@
         [8, 2, 4]
     ];
 
-    // 2. リーチ時に使用するテンパイ図柄（1〜9）
     const REACH_NUMBERS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
     // ゲーム状態
@@ -219,74 +217,109 @@
             elStCount.textContent = `ST残り: ${stRemains}回`;
         }
 
-        processFixedPattern(currentSpinData.isWin);
+        runSpinAnimation(currentSpinData.isWin);
     }
 
-    // 出目の表示処理（固定出目）
-    function processFixedPattern(isWin) {
+    // 次の数字を順繰りに取得（1→2→...→9→1）
+    function getNextNum(current) {
+        let val = parseInt(current) || 1;
+        return (val % 9) + 1;
+    }
+
+    // スピン＆固定出目停止アニメーション
+    function runSpinAnimation(isWin) {
         elEffect.textContent = "";
 
-        // リーチ発生判定（当たり時は100%リーチ、ハズレ時は約15%でガセリーチ）
+        // リーチ判定
         const isReach = isWin || (Math.random() < 0.15);
 
+        // 1stフェーズ：左・右リールが順番に動く時間
+        let step = 0;
+        const spinTimeLeftRight = isST ? 8 : 15; // 順繰り変化させるコマ数
+
+        // 停止目標の出目を決定
+        let targetLeft, targetCenter, targetRight;
+
         if (isWin) {
-            // 【大当り】指定した揃い目を表示
             const winNum = (Math.random() < RATES.ST_RUSH_RATE || isST) ? 7 : 3;
-            
-            // 1. テンパイ表示
-            elReel1.textContent = winNum;
-            elReel2.textContent = "-"; // 中は一瞬ブランクに
-            elReel3.textContent = winNum;
-            elEffect.textContent = "🔥 リーチ！！ 🔥";
-
-            // 2. 確定表示
-            setTimeout(() => {
-                elReel2.textContent = winNum;
-                if (winNum === 7) {
-                    elEffect.textContent = "【超大当り】ST「インパクトモード」突入！";
-                    isST = true;
-                    stRemains = RATES.ST_TURNS;
-                } else {
-                    elEffect.textContent = "【大当り】通常大当り";
-                    isST = false;
-                    stRemains = 0;
-                }
-                finishSpin();
-            }, 1200);
-
+            targetLeft = winNum;
+            targetRight = winNum;
+            targetCenter = winNum;
         } else if (isReach) {
-            // 【ハズレリーチ】決められたテンパイ図柄＋決められたハズレ中出目
             const reachNum = REACH_NUMBERS[Math.floor(Math.random() * REACH_NUMBERS.length)];
-            const missCenter = (reachNum % 9) + 1; // 必ず1つずれた数字
-
-            // 1. テンパイ表示（左・右が必ず同じ固定数字）
-            elReel1.textContent = reachNum;
-            elReel2.textContent = "-";
-            elReel3.textContent = reachNum;
-            elEffect.textContent = "🔥 リーチ！！ 🔥";
-
-            // 2. ハズレ確定表示
-            setTimeout(() => {
-                elReel2.textContent = missCenter;
-                elEffect.textContent = "ハズレ...";
-                finishSpin();
-            }, 1200);
-
+            targetLeft = reachNum;
+            targetRight = reachNum;
+            targetCenter = (reachNum % 9) + 1; // 1つズレ
         } else {
-            // 【完全ハズレ】定規で決めたバラケ目リストから選択して即表示
             const pattern = FIXED_LOSE_PATTERNS[Math.floor(Math.random() * FIXED_LOSE_PATTERNS.length)];
-            elReel1.textContent = pattern[0];
-            elReel2.textContent = pattern[1];
-            elReel3.textContent = pattern[2];
-            elEffect.textContent = "";
-
-            setTimeout(() => {
-                finishSpin();
-            }, 400); // 通常ハズレはスピーディーに次へ
+            targetLeft = pattern[0];
+            targetCenter = pattern[1];
+            targetRight = pattern[2];
         }
+
+        // --- フェーズ1: 全体スクロール（1→2→3...と変化） ---
+        const interval = setInterval(() => {
+            step++;
+
+            // 全てのリールを順繰りに変化させる
+            elReel1.textContent = getNextNum(elReel1.textContent);
+            elReel2.textContent = getNextNum(elReel2.textContent);
+            elReel3.textContent = getNextNum(elReel3.textContent);
+
+            // 規定ステップに達したらテンパイ（またはハズレ目）位置にビタッと止める
+            if (step >= spinTimeLeftRight) {
+                clearInterval(interval);
+
+                // 左右リールを目標の出目でビタ止め
+                elReel1.textContent = targetLeft;
+                elReel3.textContent = targetRight;
+
+                if (isReach) {
+                    // リーチ成立
+                    elEffect.textContent = "🔥 リーチ！！ 🔥";
+
+                    // --- フェーズ2: リーチ中（中リールだけが順繰り動き続ける） ---
+                    let centerStep = 0;
+                    const centerSpinTime = isST ? 10 : 25;
+
+                    const centerInterval = setInterval(() => {
+                        centerStep++;
+                        elReel2.textContent = getNextNum(elReel2.textContent);
+
+                        if (centerStep >= centerSpinTime) {
+                            clearInterval(centerInterval);
+                            
+                            // 中リールを目標の出目でビタ止め
+                            elReel2.textContent = targetCenter;
+                            
+                            if (isWin) {
+                                if (targetLeft === 7) {
+                                    elEffect.textContent = "【超大当り】ST「インパクトモード」突入！";
+                                    isST = true;
+                                    stRemains = RATES.ST_TURNS;
+                                } else {
+                                    elEffect.textContent = "【大当り】通常大当り";
+                                    isST = false;
+                                    stRemains = 0;
+                                }
+                            } else {
+                                elEffect.textContent = "ハズレ...";
+                            }
+
+                            finishSpin();
+                        }
+                    }, 60);
+
+                } else {
+                    // 通常ハズレ（中リールも目標の出目で固定）
+                    elReel2.textContent = targetCenter;
+                    finishSpin();
+                }
+            }
+        }, 50);
     }
 
-    // 変動終了時のモード状態の切り替え・次の変動への遷移
+    // 変動終了処理
     function finishSpin() {
         if (isST && stRemains <= 0) {
             isST = false;
@@ -305,7 +338,7 @@
 
         setTimeout(() => {
             startNextSpin();
-        }, 600);
+        }, 800);
     }
 </script>
 
