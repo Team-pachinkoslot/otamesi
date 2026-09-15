@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>パチンコ SIM Ver.2.0</title>
+    <title>パチンコ SIM Ver.2.1</title>
 
     <style>
         * {
@@ -14,9 +14,12 @@
         body {
             margin: 0;
             padding: 20px;
+
             background:
                 radial-gradient(circle at center, #21102e 0%, #080808 55%, #000 100%);
+
             color: #fff;
+
             font-family:
                 Arial,
                 "Hiragino Kaku Gothic ProN",
@@ -24,6 +27,7 @@
                 sans-serif;
 
             text-align: center;
+
             min-height: 100vh;
         }
 
@@ -33,12 +37,15 @@
 
         #machine {
             position: relative;
+
             width: min(760px, 100%);
+
             margin: 0 auto;
 
             padding: 14px;
 
             border: 6px solid #38284a;
+
             border-radius: 28px;
 
             background:
@@ -57,11 +64,15 @@
 
         #machine::before {
             content: "";
+
             position: absolute;
+
             inset: 4px;
+
             pointer-events: none;
 
             border-radius: 20px;
+
             border: 2px solid #67ff3a;
 
             opacity: 0.55;
@@ -90,7 +101,9 @@
             padding: 10px 10px 5px;
 
             font-size: clamp(22px, 5vw, 38px);
+
             font-weight: 900;
+
             letter-spacing: 5px;
 
             color: #dcaaff;
@@ -105,7 +118,9 @@
             margin-bottom: 10px;
 
             color: #888;
+
             font-size: 11px;
+
             letter-spacing: 4px;
         }
 
@@ -115,13 +130,18 @@
 
         #status-bar {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
+
+            grid-template-columns:
+                repeat(4, 1fr);
+
             gap: 4px;
 
             padding: 7px;
 
             background: #111;
+
             border: 1px solid #444;
+
             border-radius: 7px 7px 0 0;
 
             font-size: 13px;
@@ -129,7 +149,10 @@
 
         .status-item {
             padding: 7px 4px;
-            background: linear-gradient(#292929, #111);
+
+            background:
+                linear-gradient(#292929, #111);
+
             border: 1px solid #383838;
         }
 
@@ -137,13 +160,17 @@
             display: block;
 
             color: #888;
+
             font-size: 9px;
+
             margin-bottom: 3px;
         }
 
         .mode-normal {
             color: #00f5ff;
-            text-shadow: 0 0 5px #00cfff;
+
+            text-shadow:
+                0 0 5px #00cfff;
         }
 
         .mode-st {
@@ -153,7 +180,8 @@
                 0 0 5px #ff00ff,
                 0 0 10px #ff00ff;
 
-            animation: modeBlink 0.5s infinite alternate;
+            animation:
+                modeBlink 0.5s infinite alternate;
         }
 
         @keyframes modeBlink {
@@ -177,8 +205,7 @@
 
             overflow: hidden;
 
-            border:
-                4px solid #777;
+            border: 4px solid #777;
 
             border-radius: 3px;
 
@@ -199,6 +226,7 @@
             content: "";
 
             position: absolute;
+
             inset: 0;
 
             pointer-events: none;
@@ -215,8 +243,6 @@
             z-index: 15;
         }
 
-        /* ST背景 */
-
         #screen.st-background {
             background:
                 radial-gradient(
@@ -226,7 +252,8 @@
                     #000
                 );
 
-            animation: stBackground 1s infinite alternate;
+            animation:
+                stBackground 1s infinite alternate;
         }
 
         @keyframes stBackground {
@@ -252,10 +279,13 @@
 
             top: 20px;
 
-            color: rgba(255,255,255,0.08);
+            color:
+                rgba(255,255,255,0.08);
 
             font-weight: bold;
+
             font-size: 44px;
+
             letter-spacing: 12px;
 
             pointer-events: none;
@@ -269,9 +299,11 @@
             position: absolute;
 
             top: 50%;
+
             left: 50%;
 
-            transform: translate(-50%, -58%);
+            transform:
+                translate(-50%, -58%);
 
             width: 100%;
         }
@@ -280,22 +312,31 @@
             display: flex;
 
             justify-content: center;
+
             align-items: center;
 
-            gap: clamp(7px, 3vw, 25px);
+            gap:
+                clamp(7px, 3vw, 25px);
         }
 
         .reel {
             display: flex;
 
             justify-content: center;
+
             align-items: center;
 
-            width: clamp(80px, 24vw, 150px);
-            height: clamp(120px, 31vw, 180px);
+            width:
+                clamp(80px, 24vw, 150px);
 
-            font-size: clamp(70px, 18vw, 130px);
+            height:
+                clamp(120px, 31vw, 180px);
+
+            font-size:
+                clamp(70px, 18vw, 130px);
+
             font-weight: 900;
+
             font-style: italic;
 
             border:
@@ -328,8 +369,11 @@
         }
 
         .reel.spinning {
-            filter: blur(3px);
-            transform: scaleY(1.06);
+            filter:
+                blur(3px);
+
+            transform:
+                scaleY(1.06);
         }
 
         .reel.stopped {
@@ -382,7 +426,9 @@
             position: absolute;
 
             left: 0;
+
             right: 0;
+
             bottom: 35px;
 
             min-height: 38px;
@@ -402,7 +448,7 @@
         }
 
         /* ============================
-           巨大オーバーレイ
+           巨大表示
         ============================ */
 
         #big-overlay {
@@ -413,6 +459,7 @@
             display: flex;
 
             align-items: center;
+
             justify-content: center;
 
             z-index: 30;
@@ -444,6 +491,7 @@
         @keyframes overlayAnimation {
             0% {
                 opacity: 0;
+
                 transform:
                     scale(3);
             }
@@ -459,6 +507,7 @@
 
             100% {
                 opacity: 0;
+
                 transform:
                     scale(1);
             }
@@ -498,6 +547,7 @@
         @keyframes whiteFlash {
             0% {
                 background: white;
+
                 opacity: 1;
             }
 
@@ -510,6 +560,7 @@
             0%,
             100% {
                 background: red;
+
                 opacity: 0;
             }
 
@@ -522,6 +573,7 @@
             0%,
             100% {
                 background: #ffd700;
+
                 opacity: 0;
             }
 
@@ -544,6 +596,7 @@
             display: none;
 
             align-items: center;
+
             justify-content: center;
         }
 
@@ -553,6 +606,7 @@
 
         #push-button-screen {
             width: 110px;
+
             height: 110px;
 
             border-radius: 50%;
@@ -571,6 +625,7 @@
             color: white;
 
             font-size: 22px;
+
             font-weight: bold;
 
             text-shadow:
@@ -627,6 +682,7 @@
             display: flex;
 
             justify-content: center;
+
             align-items: center;
 
             gap: 12px;
@@ -650,12 +706,15 @@
             margin-right: 8px;
 
             color: #ccc;
+
             font-weight: bold;
+
             font-size: 14px;
         }
 
         .hold-ball {
             width: 30px;
+
             height: 30px;
 
             border-radius: 50%;
@@ -668,8 +727,7 @@
                     #050505
                 );
 
-            border:
-                2px solid #888;
+            border: 2px solid #888;
 
             box-shadow:
                 inset 0 0 5px black;
@@ -768,6 +826,7 @@
             display: flex;
 
             justify-content: center;
+
             flex-wrap: wrap;
 
             gap: 10px;
@@ -795,6 +854,7 @@
 
         #shoot-btn {
             width: 190px;
+
             height: 62px;
 
             border-radius: 32px;
@@ -861,7 +921,8 @@
 
             background: #050505;
 
-            border: 1px solid #333;
+            border:
+                1px solid #333;
 
             font-family: monospace;
 
@@ -872,6 +933,7 @@
 
         .log-win {
             color: #ffd700;
+
             font-weight: bold;
         }
 
@@ -891,6 +953,7 @@
             position: fixed;
 
             right: 8px;
+
             bottom: 8px;
 
             z-index: 100;
@@ -898,6 +961,7 @@
             padding: 3px 7px;
 
             font-size: 10px;
+
             font-family: monospace;
 
             color: #aaa;
@@ -908,12 +972,165 @@
             border:
                 1px solid #555;
 
-            border-radius:
-                3px;
+            border-radius: 3px;
+
+            cursor: default;
+
+            user-select: none;
         }
 
         /* ============================
-           スマホ
+           隠し設定画面
+        ============================ */
+
+        #secret-settings {
+            position: fixed;
+
+            inset: 0;
+
+            display: none;
+
+            align-items: center;
+
+            justify-content: center;
+
+            z-index: 9999;
+
+            background:
+                rgba(0,0,0,0.88);
+        }
+
+        #secret-settings.visible {
+            display: flex;
+        }
+
+        #secret-settings-panel {
+            width: 390px;
+
+            max-width:
+                calc(100% - 30px);
+
+            padding: 20px;
+
+            background:
+                linear-gradient(
+                    145deg,
+                    #202020,
+                    #101010
+                );
+
+            border:
+                2px solid #8b00ff;
+
+            border-radius: 12px;
+
+            box-shadow:
+                0 0 25px #7b00ff;
+
+            text-align: left;
+        }
+
+        #secret-settings-panel h2 {
+            margin:
+                0 0 5px;
+
+            color: #d9a5ff;
+
+            text-align: center;
+        }
+
+        #secret-settings-description {
+            margin-bottom: 20px;
+
+            color: #777;
+
+            text-align: center;
+
+            font-size: 11px;
+        }
+
+        .secret-setting-row {
+            margin-bottom: 15px;
+        }
+
+        .secret-setting-row label {
+            display: block;
+
+            margin-bottom: 5px;
+
+            color: #ccc;
+
+            font-size: 13px;
+        }
+
+        .secret-setting-row input {
+            width: 100%;
+
+            padding: 9px;
+
+            color: white;
+
+            background: #080808;
+
+            border:
+                1px solid #555;
+
+            border-radius: 4px;
+
+            font-size: 16px;
+        }
+
+        #secret-settings-buttons {
+            display: flex;
+
+            gap: 8px;
+
+            margin-top: 20px;
+        }
+
+        #secret-settings-buttons button {
+            flex: 1;
+
+            padding: 10px;
+
+            border-radius: 5px;
+
+            font-size: 13px;
+        }
+
+        #secret-save {
+            background: #6500a8;
+        }
+
+        #secret-reset {
+            background: #763000;
+        }
+
+        #secret-close {
+            background: #333;
+        }
+
+        #secret-current {
+            margin-top: 15px;
+
+            padding: 10px;
+
+            background: #080808;
+
+            border:
+                1px solid #333;
+
+            color: #aaa;
+
+            font-family: monospace;
+
+            font-size: 11px;
+
+            line-height: 1.7;
+        }
+
+        /* ============================
+           スマートフォン
         ============================ */
 
         @media(max-width: 600px) {
@@ -924,6 +1141,7 @@
 
             #machine {
                 border-width: 3px;
+
                 padding: 7px;
             }
 
@@ -941,6 +1159,7 @@
 
             .hold-ball {
                 width: 25px;
+
                 height: 25px;
             }
 
@@ -953,6 +1172,7 @@
 
 <body>
 
+
 <div id="machine">
 
     <div id="machine-title">
@@ -963,39 +1183,67 @@
         SIMULATION SYSTEM
     </div>
 
+
     <!-- ステータス -->
 
     <div id="status-bar">
 
         <div class="status-item">
-            <span class="status-label">MODE</span>
-            <span id="mode-display" class="mode-normal">
+
+            <span class="status-label">
+                MODE
+            </span>
+
+            <span
+                id="mode-display"
+                class="mode-normal"
+            >
                 通常
             </span>
+
         </div>
 
+
         <div class="status-item">
-            <span class="status-label">ST</span>
+
+            <span class="status-label">
+                ST
+            </span>
+
             <span id="st-count">
                 ---
             </span>
+
         </div>
 
+
         <div class="status-item">
-            <span class="status-label">SPIN</span>
+
+            <span class="status-label">
+                SPIN
+            </span>
+
             <span id="total-spins">
                 0
             </span>
+
         </div>
 
+
         <div class="status-item">
-            <span class="status-label">BONUS</span>
+
+            <span class="status-label">
+                BONUS
+            </span>
+
             <span id="hit-count">
                 0
             </span>
+
         </div>
 
     </div>
+
 
     <!-- 液晶 -->
 
@@ -1004,6 +1252,7 @@
         <div id="background-message">
             IMPACT
         </div>
+
 
         <div id="reels-wrapper">
 
@@ -1034,13 +1283,19 @@
 
         </div>
 
+
         <div id="effect-text">
             玉を打ってください
         </div>
 
-        <div id="big-overlay"></div>
 
-        <div id="flash"></div>
+        <div id="big-overlay">
+        </div>
+
+
+        <div id="flash">
+        </div>
+
 
         <div id="push-overlay">
 
@@ -1051,6 +1306,7 @@
         </div>
 
     </div>
+
 
     <!-- 保留 -->
 
@@ -1082,6 +1338,7 @@
 
     </div>
 
+
     <!-- 操作 -->
 
     <div id="control-panel">
@@ -1095,6 +1352,7 @@
                 玉を打つ
             </button>
 
+
             <button
                 id="auto-btn"
                 class="small-btn"
@@ -1102,6 +1360,7 @@
             >
                 AUTO OFF
             </button>
+
 
             <button
                 id="sound-btn"
@@ -1113,26 +1372,137 @@
 
         </div>
 
-        <!-- ログ -->
 
-        <div id="log-panel"></div>
+        <div id="log-panel">
+        </div>
 
     </div>
 
 </div>
 
+
+<!-- バージョン -->
+
 <div id="version-display">
-    Ver. 2.0
+    Ver. 2.1
 </div>
+
+
+<!-- ======================================
+     隠し確率設定
+====================================== -->
+
+<div id="secret-settings">
+
+    <div id="secret-settings-panel">
+
+        <h2>
+            SYSTEM SETTINGS
+        </h2>
+
+        <div id="secret-settings-description">
+            Simulation Probability Configuration
+        </div>
+
+
+        <div class="secret-setting-row">
+
+            <label>
+                通常時 大当り確率（1 / ○○）
+            </label>
+
+            <input
+                type="number"
+                id="setting-normal"
+                step="0.1"
+                min="1"
+            >
+
+        </div>
+
+
+        <div class="secret-setting-row">
+
+            <label>
+                ST中 大当り確率（1 / ○○）
+            </label>
+
+            <input
+                type="number"
+                id="setting-st"
+                step="0.1"
+                min="1"
+            >
+
+        </div>
+
+
+        <div class="secret-setting-row">
+
+            <label>
+                ST突入率（%）
+            </label>
+
+            <input
+                type="number"
+                id="setting-rush"
+                step="0.1"
+                min="0"
+                max="100"
+            >
+
+        </div>
+
+
+        <div class="secret-setting-row">
+
+            <label>
+                ST回数
+            </label>
+
+            <input
+                type="number"
+                id="setting-turns"
+                step="1"
+                min="1"
+            >
+
+        </div>
+
+
+        <div id="secret-settings-buttons">
+
+            <button id="secret-save">
+                保存
+            </button>
+
+            <button id="secret-reset">
+                初期値
+            </button>
+
+            <button id="secret-close">
+                閉じる
+            </button>
+
+        </div>
+
+
+        <div id="secret-current">
+        </div>
+
+    </div>
+
+</div>
+
 
 
 <script>
 
 /* ========================================
-   パラメータ
+   初期確率
 ======================================== */
 
-const RATES = {
+const DEFAULT_RATES = {
 
     NORMAL: 319.7,
 
@@ -1143,6 +1513,79 @@ const RATES = {
     ST_TURNS: 163
 
 };
+
+
+/* ========================================
+   保存済み確率を読み込む
+======================================== */
+
+function loadRateSettings() {
+
+    try {
+
+        const savedText =
+            localStorage.getItem(
+                "pachinkoRateSettings"
+            );
+
+        if (!savedText) {
+
+            return {
+                ...DEFAULT_RATES
+            };
+
+        }
+
+
+        const saved =
+            JSON.parse(
+                savedText
+            );
+
+
+        return {
+
+            NORMAL:
+                Number(saved.NORMAL) > 0
+                    ? Number(saved.NORMAL)
+                    : DEFAULT_RATES.NORMAL,
+
+            ST:
+                Number(saved.ST) > 0
+                    ? Number(saved.ST)
+                    : DEFAULT_RATES.ST,
+
+            ST_RUSH_RATE:
+                Number(saved.ST_RUSH_RATE) >= 0 &&
+                Number(saved.ST_RUSH_RATE) <= 1
+
+                    ? Number(saved.ST_RUSH_RATE)
+
+                    : DEFAULT_RATES.ST_RUSH_RATE,
+
+            ST_TURNS:
+                Number(saved.ST_TURNS) > 0
+                    ? Math.floor(
+                        Number(saved.ST_TURNS)
+                    )
+                    : DEFAULT_RATES.ST_TURNS
+
+        };
+
+    }
+    catch (error) {
+
+        return {
+            ...DEFAULT_RATES
+        };
+
+    }
+
+}
+
+
+const RATES =
+    loadRateSettings();
 
 
 /* ========================================
@@ -1175,49 +1618,84 @@ let soundEnabled = true;
 ======================================== */
 
 const reel1 =
-    document.getElementById("reel1");
+    document.getElementById(
+        "reel1"
+    );
 
 const reel2 =
-    document.getElementById("reel2");
+    document.getElementById(
+        "reel2"
+    );
 
 const reel3 =
-    document.getElementById("reel3");
+    document.getElementById(
+        "reel3"
+    );
 
 const screen =
-    document.getElementById("screen");
+    document.getElementById(
+        "screen"
+    );
 
 const effectText =
-    document.getElementById("effect-text");
+    document.getElementById(
+        "effect-text"
+    );
 
 const modeDisplay =
-    document.getElementById("mode-display");
+    document.getElementById(
+        "mode-display"
+    );
 
 const stCount =
-    document.getElementById("st-count");
+    document.getElementById(
+        "st-count"
+    );
 
 const totalSpinsEl =
-    document.getElementById("total-spins");
+    document.getElementById(
+        "total-spins"
+    );
 
 const hitCountEl =
-    document.getElementById("hit-count");
+    document.getElementById(
+        "hit-count"
+    );
 
 const bigOverlay =
-    document.getElementById("big-overlay");
+    document.getElementById(
+        "big-overlay"
+    );
 
 const flash =
-    document.getElementById("flash");
+    document.getElementById(
+        "flash"
+    );
 
 const pushOverlay =
-    document.getElementById("push-overlay");
+    document.getElementById(
+        "push-overlay"
+    );
 
 const autoBtn =
-    document.getElementById("auto-btn");
+    document.getElementById(
+        "auto-btn"
+    );
 
 const soundBtn =
-    document.getElementById("sound-btn");
+    document.getElementById(
+        "sound-btn"
+    );
 
 const logPanel =
-    document.getElementById("log-panel");
+    document.getElementById(
+        "log-panel"
+    );
+
+const versionDisplay =
+    document.getElementById(
+        "version-display"
+    );
 
 
 /* ========================================
@@ -1227,8 +1705,14 @@ const logPanel =
 function sleep(ms) {
 
     return new Promise(
-        resolve =>
-            setTimeout(resolve, ms)
+        resolve => {
+
+            setTimeout(
+                resolve,
+                ms
+            );
+
+        }
     );
 
 }
@@ -1246,6 +1730,7 @@ function addLog(
     const now =
         new Date();
 
+
     const time =
         now.toLocaleTimeString(
             "ja-JP",
@@ -1254,19 +1739,30 @@ function addLog(
             }
         );
 
+
     const line =
-        document.createElement("div");
+        document.createElement(
+            "div"
+        );
+
 
     line.textContent =
         `[${time}] ${message}`;
 
+
     if (type) {
 
-        line.classList.add(type);
+        line.classList.add(
+            type
+        );
 
     }
 
-    logPanel.appendChild(line);
+
+    logPanel.appendChild(
+        line
+    );
+
 
     logPanel.scrollTop =
         logPanel.scrollHeight;
@@ -1285,8 +1781,11 @@ function tone(
 ) {
 
     if (!soundEnabled) {
+
         return;
+
     }
+
 
     try {
 
@@ -1294,44 +1793,58 @@ function tone(
             window.AudioContext ||
             window.webkitAudioContext;
 
+
         const context =
             new AudioContextClass();
+
 
         const oscillator =
             context.createOscillator();
 
+
         const gain =
             context.createGain();
+
 
         oscillator.type =
             "square";
 
+
         oscillator.frequency.value =
             frequency;
+
 
         gain.gain.value =
             volume;
 
-        oscillator.connect(gain);
+
+        oscillator.connect(
+            gain
+        );
+
 
         gain.connect(
             context.destination
         );
 
+
         oscillator.start();
+
 
         gain.gain.exponentialRampToValueAtTime(
             0.001,
             context.currentTime + duration
         );
 
+
         oscillator.stop(
             context.currentTime + duration
         );
 
-    } catch (e) {
+    }
+    catch (error) {
 
-        // 音が再生できなくてもゲームは継続
+        /* 音声非対応でも継続 */
 
     }
 
@@ -1339,7 +1852,7 @@ function tone(
 
 
 /* ========================================
-   サウンド
+   サウンド切替
 ======================================== */
 
 function toggleSound() {
@@ -1347,10 +1860,12 @@ function toggleSound() {
     soundEnabled =
         !soundEnabled;
 
+
     soundBtn.textContent =
         soundEnabled
             ? "SOUND ON"
             : "SOUND OFF";
+
 
     soundBtn.classList.toggle(
         "active",
@@ -1369,15 +1884,18 @@ function toggleAuto() {
     autoMode =
         !autoMode;
 
+
     autoBtn.textContent =
         autoMode
             ? "AUTO ON"
             : "AUTO OFF";
 
+
     autoBtn.classList.toggle(
         "active",
         autoMode
     );
+
 
     if (autoMode) {
 
@@ -1385,6 +1903,7 @@ function toggleAuto() {
             "オート打ち開始",
             "log-info"
         );
+
 
         autoTimer =
             setInterval(
@@ -1402,16 +1921,19 @@ function toggleAuto() {
                 400
             );
 
-    } else {
+    }
+    else {
 
         addLog(
             "オート打ち停止",
             "log-info"
         );
 
+
         clearInterval(
             autoTimer
         );
+
 
         autoTimer = null;
 
@@ -1421,10 +1943,7 @@ function toggleAuto() {
 
 
 /* ========================================
-   保留タイプ決定
-
-   ※抽選結果自体はここでは変更しない
-   保留色は演出上の期待度示唆
+   保留色
 ======================================== */
 
 function determineHoldType(
@@ -1434,45 +1953,67 @@ function determineHoldType(
     const r =
         Math.random();
 
-    /*
-       大当りの場合は
-       強い保留が出やすい
-    */
 
     if (isWin) {
 
-        if (r < 0.18) {
+        if (
+            r < 0.18
+        ) {
+
             return "gold";
+
         }
 
-        if (r < 0.62) {
+
+        if (
+            r < 0.62
+        ) {
+
             return "red";
+
         }
 
-        if (r < 0.85) {
+
+        if (
+            r < 0.85
+        ) {
+
             return "green";
+
         }
+
 
         return "blue";
 
     }
 
-    /*
-       ハズレでも
-       赤・金が絶対出ないわけではない
-    */
 
-    if (r < 0.003) {
+    if (
+        r < 0.003
+    ) {
+
         return "gold";
+
     }
 
-    if (r < 0.025) {
+
+    if (
+        r < 0.025
+    ) {
+
         return "red";
+
     }
 
-    if (r < 0.15) {
+
+    if (
+        r < 0.15
+    ) {
+
         return "green";
+
     }
+
 
     return "blue";
 
@@ -1493,28 +2034,34 @@ function addHold() {
 
     }
 
+
     const currentRate =
         isST
             ? RATES.ST
             : RATES.NORMAL;
 
-    /*
+
+    /* ================================
        大当り抽選
-    */
+    ================================ */
 
     const randomValue =
         Math.random();
 
+
     const winBorder =
         1 / currentRate;
 
+
     const isWin =
         randomValue < winBorder;
+
 
     const holdType =
         determineHoldType(
             isWin
         );
+
 
     holds.push({
 
@@ -1524,15 +2071,14 @@ function addHold() {
 
     });
 
+
     addLog(
-        `入賞 / ${
-            isST
-                ? "ST"
-                : "通常"
-        } / 1/${currentRate}`
+        `入賞 / ${isST ? "ST" : "通常"} / 1/${currentRate}`
     );
 
+
     updateHoldUI();
+
 
     if (!isSpinning) {
 
@@ -1560,8 +2106,10 @@ function updateHoldUI() {
                 `hold${i}`
             );
 
+
         ball.className =
             "hold-ball";
+
 
         if (
             i < holds.length
@@ -1569,6 +2117,7 @@ function updateHoldUI() {
 
             const hold =
                 holds[i];
+
 
             ball.classList.add(
                 `hold-${hold.holdType}`
@@ -1593,38 +2142,49 @@ async function startNextSpin() {
 
         isSpinning = false;
 
+
         effectText.textContent =
             "玉を打ってください";
+
 
         return;
 
     }
 
+
     isSpinning = true;
+
 
     const spinData =
         holds.shift();
 
+
     updateHoldUI();
 
+
     totalSpins++;
+
 
     totalSpinsEl.textContent =
         totalSpins;
 
+
     if (isST) {
 
         stRemains--;
+
 
         stCount.textContent =
             `${stRemains}回`;
 
     }
 
+
     addLog(
         `変動 #${totalSpins} 開始`,
         "log-info"
     );
+
 
     await runSpinAnimation(
         spinData
@@ -1634,7 +2194,7 @@ async function startNextSpin() {
 
 
 /* ========================================
-   リール数字変更
+   ランダム図柄
 ======================================== */
 
 function randomNumber() {
@@ -1649,7 +2209,7 @@ function randomNumber() {
 
 
 /* ========================================
-   リール高速回転
+   リール開始
 ======================================== */
 
 function startReelSpin(
@@ -1659,6 +2219,7 @@ function startReelSpin(
     reel.classList.add(
         "spinning"
     );
+
 
     return setInterval(
         () => {
@@ -1687,22 +2248,28 @@ function stopReel(
         interval
     );
 
+
     reel.textContent =
         number;
+
 
     reel.classList.remove(
         "spinning"
     );
 
+
     reel.classList.remove(
         "stopped"
     );
 
+
     void reel.offsetWidth;
+
 
     reel.classList.add(
         "stopped"
     );
+
 
     tone(
         180,
@@ -1724,11 +2291,14 @@ function showOverlay(
     bigOverlay.textContent =
         text;
 
+
     bigOverlay.classList.remove(
         "show"
     );
 
+
     void bigOverlay.offsetWidth;
+
 
     bigOverlay.classList.add(
         "show"
@@ -1745,9 +2315,12 @@ function screenFlash(
     type
 ) {
 
-    flash.className = "";
+    flash.className =
+        "";
+
 
     void flash.offsetWidth;
+
 
     flash.classList.add(
         type
@@ -1757,7 +2330,7 @@ function screenFlash(
 
 
 /* ========================================
-   PUSH演出
+   PUSH
 ======================================== */
 
 async function showPush() {
@@ -1766,18 +2339,15 @@ async function showPush() {
         "visible"
     );
 
-    let pushed =
-        false;
 
     const button =
         document.getElementById(
             "push-button-screen"
         );
 
+
     const pushHandler =
         () => {
-
-            pushed = true;
 
             tone(
                 600,
@@ -1785,11 +2355,13 @@ async function showPush() {
                 0.08
             );
 
+
             screenFlash(
                 "white"
             );
 
         };
+
 
     button.addEventListener(
         "click",
@@ -1799,25 +2371,21 @@ async function showPush() {
         }
     );
 
-    /*
-       押さなくても進行
-    */
 
     await sleep(
         1100
     );
 
+
     pushOverlay.classList.remove(
         "visible"
     );
-
-    return pushed;
 
 }
 
 
 /* ========================================
-   変動アニメーション
+   変動演出
 ======================================== */
 
 async function runSpinAnimation(
@@ -1827,12 +2395,15 @@ async function runSpinAnimation(
     const isWin =
         spinData.isWin;
 
+
     effectText.textContent =
         "変動開始";
+
 
     screen.classList.remove(
         "jackpot"
     );
+
 
     [
         reel1,
@@ -1848,45 +2419,46 @@ async function runSpinAnimation(
         }
     );
 
+
     tone(
         220,
         0.06
     );
 
-    /*
-       リーチ抽選
 
-       当たり = 必ずリーチ
-       ハズレ = 約15%
+    /*
+       当たりは必ずリーチ
+       ハズレは15%でリーチ
     */
 
     const isReach =
         isWin ||
         Math.random() < 0.15;
 
-    /*
-       図柄決定
-    */
 
     let reachNum;
+
 
     if (isWin) {
 
         /*
-           通常時70%でST図柄
+           ST中は7図柄
 
-           ST中の大当りは7扱い
+           通常時は
+           設定したST突入率によって
+           7図柄を決定
         */
 
         if (
             isST ||
             Math.random() <
-            RATES.ST_RUSH_RATE
+                RATES.ST_RUSH_RATE
         ) {
 
             reachNum = 7;
 
-        } else {
+        }
+        else {
 
             do {
 
@@ -1900,53 +2472,51 @@ async function runSpinAnimation(
 
         }
 
-    } else {
+    }
+    else {
 
         reachNum =
             randomNumber();
 
     }
 
-    /*
-       リール開始
-    */
 
     const interval1 =
         startReelSpin(
             reel1
         );
 
+
     const interval2 =
         startReelSpin(
             reel2
         );
+
 
     const interval3 =
         startReelSpin(
             reel3
         );
 
-    /*
-       ST中は高速
-    */
 
     const speed =
         isST
             ? 0.55
             : 1;
 
+
     await sleep(
         750 * speed
     );
 
-    /*
-       左停止
-    */
+
+    /* 左停止 */
 
     const leftNum =
         isReach
             ? reachNum
             : randomNumber();
+
 
     stopReel(
         reel1,
@@ -1954,22 +2524,24 @@ async function runSpinAnimation(
         interval1
     );
 
+
     await sleep(
         500 * speed
     );
 
-    /*
-       右停止
-    */
+
+    /* 右停止 */
 
     let rightNum;
+
 
     if (isReach) {
 
         rightNum =
             reachNum;
 
-    } else {
+    }
+    else {
 
         do {
 
@@ -1983,15 +2555,17 @@ async function runSpinAnimation(
 
     }
 
+
     stopReel(
         reel3,
         rightNum,
         interval3
     );
 
-    /*
-       リーチなし
-    */
+
+    /* ================================
+       非リーチ
+    ================================ */
 
     if (!isReach) {
 
@@ -1999,7 +2573,9 @@ async function runSpinAnimation(
             450 * speed
         );
 
+
         let center;
+
 
         do {
 
@@ -2012,18 +2588,22 @@ async function runSpinAnimation(
             leftNum === rightNum
         );
 
+
         stopReel(
             reel2,
             center,
             interval2
         );
 
+
         effectText.textContent =
             "";
+
 
         await sleep(
             650 * speed
         );
+
 
         await finalizeSpin(
             false,
@@ -2031,29 +2611,35 @@ async function runSpinAnimation(
             reachNum
         );
 
+
         return;
 
     }
 
-    /*
-       リーチ成立
-    */
+
+    /* ================================
+       リーチ
+    ================================ */
 
     addLog(
         `${reachNum}図柄 リーチ成立`,
         "log-reach"
     );
 
+
     effectText.textContent =
         "リーチ！！";
+
 
     showOverlay(
         "REACH"
     );
 
+
     screenFlash(
         "red"
     );
+
 
     tone(
         350,
@@ -2061,22 +2647,26 @@ async function runSpinAnimation(
         0.06
     );
 
+
     await sleep(
         800 * speed
     );
 
-    /*
-       強演出判定
-    */
+
+    /* ================================
+       激熱演出
+    ================================ */
 
     const hotChance =
         isWin
             ? 0.72
             : 0.08;
 
+
     const isHot =
         Math.random() <
         hotChance;
+
 
     if (isHot) {
 
@@ -2085,16 +2675,20 @@ async function runSpinAnimation(
             "log-reach"
         );
 
+
         effectText.textContent =
             "激 熱";
+
 
         showOverlay(
             "激熱"
         );
 
+
         screenFlash(
             "gold"
         );
+
 
         tone(
             700,
@@ -2102,27 +2696,32 @@ async function runSpinAnimation(
             0.07
         );
 
+
         await sleep(
             900 * speed
         );
 
     }
 
-    /*
-       PUSH演出
-    */
+
+    /* ================================
+       PUSH
+    ================================ */
 
     effectText.textContent =
         "ボタンを押せ！";
 
+
     await showPush();
 
-    /*
+
+    /* ================================
        最終煽り
-    */
+    ================================ */
 
     effectText.textContent =
         "決まるか！？";
+
 
     for (
         let i = 0;
@@ -2136,11 +2735,13 @@ async function runSpinAnimation(
                 : "white"
         );
 
+
         tone(
             300 + i * 60,
             0.05,
             0.03
         );
+
 
         await sleep(
             170
@@ -2148,9 +2749,10 @@ async function runSpinAnimation(
 
     }
 
-    /*
-       中リール停止
-    */
+
+    /* ================================
+       中央停止
+    ================================ */
 
     if (isWin) {
 
@@ -2160,15 +2762,17 @@ async function runSpinAnimation(
             interval2
         );
 
-    } else {
+    }
+    else {
 
         let missCenter =
-            reachNum + (
-                Math.random() <
-                0.5
+            reachNum +
+            (
+                Math.random() < 0.5
                     ? 1
                     : -1
             );
+
 
         if (
             missCenter < 1
@@ -2178,6 +2782,7 @@ async function runSpinAnimation(
 
         }
 
+
         if (
             missCenter > 9
         ) {
@@ -2185,6 +2790,7 @@ async function runSpinAnimation(
             missCenter = 1;
 
         }
+
 
         stopReel(
             reel2,
@@ -2194,9 +2800,11 @@ async function runSpinAnimation(
 
     }
 
+
     await sleep(
         350
     );
+
 
     await finalizeSpin(
         isWin,
@@ -2208,7 +2816,7 @@ async function runSpinAnimation(
 
 
 /* ========================================
-   変動結果
+   結果
 ======================================== */
 
 async function finalizeSpin(
@@ -2219,40 +2827,45 @@ async function finalizeSpin(
 
     if (isWin) {
 
-        /*
-           大当り
-        */
-
         hitCount++;
+
 
         hitCountEl.textContent =
             hitCount;
 
+
         reel1.textContent =
             reachNum;
+
 
         reel2.textContent =
             reachNum;
 
+
         reel3.textContent =
             reachNum;
+
 
         screen.classList.add(
             "jackpot"
         );
+
 
         addLog(
             `大当り！ ${reachNum}${reachNum}${reachNum}`,
             "log-win"
         );
 
+
         showOverlay(
             "大当り"
         );
 
+
         screenFlash(
             "white"
         );
+
 
         tone(
             800,
@@ -2260,9 +2873,11 @@ async function finalizeSpin(
             0.08
         );
 
+
         await sleep(
             250
         );
+
 
         tone(
             1000,
@@ -2270,9 +2885,11 @@ async function finalizeSpin(
             0.08
         );
 
+
         await sleep(
             250
         );
+
 
         tone(
             1200,
@@ -2280,13 +2897,14 @@ async function finalizeSpin(
             0.08
         );
 
+
+        /* ================================
+           ST突入
+        ================================ */
+
         if (
             reachNum === 7
         ) {
-
-            /*
-               777
-            */
 
             [
                 reel1,
@@ -2302,68 +2920,77 @@ async function finalizeSpin(
                 }
             );
 
+
             effectText.textContent =
                 "777 SPECIAL BONUS";
+
 
             await sleep(
                 800
             );
 
+
             showOverlay(
                 "777"
             );
+
 
             screenFlash(
                 "gold"
             );
 
+
             await sleep(
                 900
             );
 
-            /*
-               ST突入
-            */
 
             isST = true;
+
 
             stRemains =
                 RATES.ST_TURNS;
 
+
             rushCount++;
+
 
             screen.classList.add(
                 "st-background"
             );
+
 
             addLog(
                 `IMPACT MODE 突入 / ${RATES.ST_TURNS}回`,
                 "log-win"
             );
 
+
             effectText.textContent =
                 "IMPACT MODE 突入";
+
 
             showOverlay(
                 "IMPACT"
             );
 
-        } else {
-
-            /*
-               通常大当り
-            */
+        }
+        else {
 
             effectText.textContent =
                 "BONUS";
 
+
             isST = false;
 
+
             stRemains = 0;
+
 
             screen.classList.remove(
                 "st-background"
             );
+
 
             addLog(
                 "通常大当り",
@@ -2372,20 +2999,19 @@ async function finalizeSpin(
 
         }
 
-    } else {
-
-        /*
-           ハズレ
-        */
+    }
+    else {
 
         if (isReach) {
 
             effectText.textContent =
                 "ハズレ…";
 
+
             addLog(
                 "リーチ ハズレ"
             );
+
 
             tone(
                 130,
@@ -2393,16 +3019,18 @@ async function finalizeSpin(
                 0.025
             );
 
-        } else {
+        }
+        else {
 
             effectText.textContent =
                 "";
 
         }
 
-        /*
-           ST終了判定
-        */
+
+        /* ================================
+           ST終了
+        ================================ */
 
         if (
             isST &&
@@ -2411,23 +3039,29 @@ async function finalizeSpin(
 
             isST = false;
 
+
             stRemains = 0;
+
 
             screen.classList.remove(
                 "st-background"
             );
 
+
             effectText.textContent =
                 "IMPACT MODE 終了";
+
 
             showOverlay(
                 "ST END"
             );
 
+
             addLog(
                 "ST終了",
                 "log-info"
             );
+
 
             await sleep(
                 1000
@@ -2437,11 +3071,9 @@ async function finalizeSpin(
 
     }
 
-    /*
-       UI更新
-    */
 
     updateModeUI();
+
 
     await sleep(
         isST
@@ -2449,13 +3081,11 @@ async function finalizeSpin(
             : 850
     );
 
+
     screen.classList.remove(
         "jackpot"
     );
 
-    /*
-       次の保留
-    */
 
     startNextSpin();
 
@@ -2473,26 +3103,33 @@ function updateModeUI() {
         modeDisplay.textContent =
             "IMPACT";
 
+
         modeDisplay.className =
             "mode-st";
 
+
         stCount.textContent =
             `${stRemains}回`;
+
 
         screen.classList.add(
             "st-background"
         );
 
-    } else {
+    }
+    else {
 
         modeDisplay.textContent =
             "通常";
 
+
         modeDisplay.className =
             "mode-normal";
 
+
         stCount.textContent =
             "---";
+
 
         screen.classList.remove(
             "st-background"
@@ -2504,20 +3141,405 @@ function updateModeUI() {
 
 
 /* ========================================
-   初期ログ
+   隠し設定画面
+======================================== */
+
+const secretSettings =
+    document.getElementById(
+        "secret-settings"
+    );
+
+
+const settingNormal =
+    document.getElementById(
+        "setting-normal"
+    );
+
+
+const settingST =
+    document.getElementById(
+        "setting-st"
+    );
+
+
+const settingRush =
+    document.getElementById(
+        "setting-rush"
+    );
+
+
+const settingTurns =
+    document.getElementById(
+        "setting-turns"
+    );
+
+
+const secretCurrent =
+    document.getElementById(
+        "secret-current"
+    );
+
+
+/* ========================================
+   設定画面表示更新
+======================================== */
+
+function updateSecretSettingsDisplay() {
+
+    settingNormal.value =
+        RATES.NORMAL;
+
+
+    settingST.value =
+        RATES.ST;
+
+
+    settingRush.value =
+        (
+            RATES.ST_RUSH_RATE *
+            100
+        ).toFixed(1);
+
+
+    settingTurns.value =
+        RATES.ST_TURNS;
+
+
+    secretCurrent.innerHTML =
+        `
+        現在設定<br>
+        -------------------------<br>
+        通常大当り：1/${RATES.NORMAL}<br>
+        ST大当り：1/${RATES.ST}<br>
+        ST突入率：${(RATES.ST_RUSH_RATE * 100).toFixed(1)}%<br>
+        ST回数：${RATES.ST_TURNS}回
+        `;
+
+}
+
+
+/* ========================================
+   設定画面を開く
+======================================== */
+
+function openSecretSettings() {
+
+    updateSecretSettingsDisplay();
+
+
+    secretSettings.classList.add(
+        "visible"
+    );
+
+}
+
+
+/* ========================================
+   設定画面を閉じる
+======================================== */
+
+function closeSecretSettings() {
+
+    secretSettings.classList.remove(
+        "visible"
+    );
+
+}
+
+
+/* ========================================
+   バージョン5回クリック
+======================================== */
+
+let versionClickCount = 0;
+
+let versionClickTimer = null;
+
+
+versionDisplay.addEventListener(
+    "click",
+    () => {
+
+        versionClickCount++;
+
+
+        clearTimeout(
+            versionClickTimer
+        );
+
+
+        versionClickTimer =
+            setTimeout(
+                () => {
+
+                    versionClickCount = 0;
+
+                },
+                2000
+            );
+
+
+        if (
+            versionClickCount >= 5
+        ) {
+
+            versionClickCount = 0;
+
+
+            clearTimeout(
+                versionClickTimer
+            );
+
+
+            openSecretSettings();
+
+        }
+
+    }
+);
+
+
+/* ========================================
+   Ctrl + Shift + P
+======================================== */
+
+document.addEventListener(
+    "keydown",
+    event => {
+
+        if (
+            event.ctrlKey &&
+            event.shiftKey &&
+            event.key.toLowerCase() === "p"
+        ) {
+
+            event.preventDefault();
+
+
+            openSecretSettings();
+
+        }
+
+
+        if (
+            event.key === "Escape"
+        ) {
+
+            closeSecretSettings();
+
+        }
+
+    }
+);
+
+
+/* ========================================
+   設定保存
+======================================== */
+
+document
+    .getElementById(
+        "secret-save"
+    )
+    .addEventListener(
+        "click",
+        () => {
+
+            const normal =
+                Number(
+                    settingNormal.value
+                );
+
+
+            const st =
+                Number(
+                    settingST.value
+                );
+
+
+            const rush =
+                Number(
+                    settingRush.value
+                );
+
+
+            const turns =
+                Number(
+                    settingTurns.value
+                );
+
+
+            if (
+                !Number.isFinite(normal) ||
+                !Number.isFinite(st) ||
+                !Number.isFinite(rush) ||
+                !Number.isFinite(turns) ||
+                normal < 1 ||
+                st < 1 ||
+                rush < 0 ||
+                rush > 100 ||
+                turns < 1
+            ) {
+
+                alert(
+                    "設定値を確認してください。"
+                );
+
+
+                return;
+
+            }
+
+
+            RATES.NORMAL =
+                normal;
+
+
+            RATES.ST =
+                st;
+
+
+            RATES.ST_RUSH_RATE =
+                rush / 100;
+
+
+            RATES.ST_TURNS =
+                Math.floor(
+                    turns
+                );
+
+
+            localStorage.setItem(
+                "pachinkoRateSettings",
+                JSON.stringify(
+                    RATES
+                )
+            );
+
+
+            updateSecretSettingsDisplay();
+
+
+            addLog(
+                `確率設定変更 / 通常 1/${RATES.NORMAL} / ST 1/${RATES.ST} / ST突入率 ${(RATES.ST_RUSH_RATE * 100).toFixed(1)}%`,
+                "log-info"
+            );
+
+
+            alert(
+                "確率設定を保存しました。"
+            );
+
+        }
+    );
+
+
+/* ========================================
+   初期設定へ戻す
+======================================== */
+
+document
+    .getElementById(
+        "secret-reset"
+    )
+    .addEventListener(
+        "click",
+        () => {
+
+            RATES.NORMAL =
+                DEFAULT_RATES.NORMAL;
+
+
+            RATES.ST =
+                DEFAULT_RATES.ST;
+
+
+            RATES.ST_RUSH_RATE =
+                DEFAULT_RATES.ST_RUSH_RATE;
+
+
+            RATES.ST_TURNS =
+                DEFAULT_RATES.ST_TURNS;
+
+
+            localStorage.removeItem(
+                "pachinkoRateSettings"
+            );
+
+
+            updateSecretSettingsDisplay();
+
+
+            addLog(
+                "確率設定を初期値へ戻しました",
+                "log-info"
+            );
+
+        }
+    );
+
+
+/* ========================================
+   閉じるボタン
+======================================== */
+
+document
+    .getElementById(
+        "secret-close"
+    )
+    .addEventListener(
+        "click",
+        () => {
+
+            closeSecretSettings();
+
+        }
+    );
+
+
+/* ========================================
+   背景クリックで閉じる
+======================================== */
+
+secretSettings.addEventListener(
+    "click",
+    event => {
+
+        if (
+            event.target ===
+            secretSettings
+        ) {
+
+            closeSecretSettings();
+
+        }
+
+    }
+);
+
+
+/* ========================================
+   起動ログ
 ======================================== */
 
 addLog(
-    "PACHINKO SIM Ver.2.0 起動",
+    "PACHINKO SIM Ver.2.1 起動",
     "log-info"
 );
+
 
 addLog(
     `通常確率 1/${RATES.NORMAL}`
 );
 
+
 addLog(
     `ST確率 1/${RATES.ST} / ${RATES.ST_TURNS}回`
+);
+
+
+addLog(
+    `ST突入率 ${(RATES.ST_RUSH_RATE * 100).toFixed(1)}%`
 );
 
 </script>
