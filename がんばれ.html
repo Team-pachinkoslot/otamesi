@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>周期抽選 - あたり/はずれ判定</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; margin-top: 50px; }
+        #number { font-size: 64px; font-weight: bold; color: #333; margin-top: 20px; }
+        
+        /* 当たりとはずれのスタイル */
+        #status { font-size: 40px; font-weight: bold; margin-top: 10px; }
+        .win { color: #dc3545; }  /* 赤色 */
+        .lose { color: #6c757d; } /* 灰色 */
+    </style>
+</head>
+<body>
+
+    <h1>スペースキーを押して抽選！</h1>
+    <div id="number">-</div>
+    <div id="status"></div>
+
+    <script>
+        const MIN = 1;
+        const MAX = 65536;
+        const RANGE = MAX - MIN + 1;
+        const STEP_TIME_MS = 0.005; // 0.1ミリ秒周期
+
+        document.addEventListener('keydown', function(event) {
+            if (event.code === 'Space') {
+                event.preventDefault();
+
+                // 押された瞬間の数字を算出
+                const now = performance.now();
+                const steps = Math.floor(now / STEP_TIME_MS);
+                const selectedNumber = MIN + (steps % RANGE);
+
+                // 数字を表示
+                document.getElementById('number').innerText = selectedNumber;
+
+                // --- あたり・はずれの判定 ---
+                const statusEl = document.getElementById('status');
+                
+                // 例：1 〜 10（10%の確率）が「あたり」
+                if (selectedNumber <= 33) {
+                    statusEl.innerText = "！大あたり！";
+                    statusEl.className = "win";
+                else if (selectedNumber >= 34 && selectedNumber <= 662) {
+                    statusEl.innerText = "！あたり！";
+                    statusEl.className = "win";
+                } else {
+                    statusEl.innerText = "はずれ...";
+                    statusEl.className = "lose";
+                }
+
+                console.log(`数字: ${selectedNumber} -> 判定: ${statusEl.innerText}`);
+            }
+        });
+    </script>
+
+</body>
+</html>
