@@ -129,7 +129,8 @@
 <script>
     // パラメータ設定
     const RATES = {
-        NORMAL: 319.7,
+        // NORMAL: 319.7,
+        NORMAL: 10.0,
         ST: 99.4,
         ST_RUSH_RATE: 0.70, // ST突入率 70%
         ST_TURNS: 163
@@ -257,9 +258,18 @@
             }
         } else {
             // ハズレ
-            elReel1.textContent = 1;
-            elReel2.textContent = 3;
-            elReel3.textContent = 5;
+            // ハズレ目をランダム生成
+            let r1, r2, r3;
+
+            do {
+                r1 = Math.floor(Math.random() * 9) + 1;
+                r2 = Math.floor(Math.random() * 9) + 1;
+                r3 = Math.floor(Math.random() * 9) + 1;
+            } while (r1 === r2 && r2 === r3); // 3つ揃いは大当りなので除外
+
+            elReel1.textContent = r1;
+            elReel2.textContent = r2;
+            elReel3.textContent = r3;
             
             // ST終了判定
             if (isST && stRemains <= 0) {
