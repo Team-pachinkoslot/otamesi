@@ -93,6 +93,19 @@
         button:active {
             transform: translateY(2px);
         }
+
+        #version-display {
+            position: fixed;
+            right: 8px;
+            bottom: 8px;
+            padding: 2px 6px;
+            font-size: 10px;
+            color: #aaa;
+            background: #111;
+            border: 1px solid #555;
+            border-radius: 3px;
+            font-family: monospace;
+        }
     </style>
 </head>
 <body>
@@ -126,188 +139,166 @@
     </div>
 </div>
 
+<div id="version-display">Ver. 1.0.0</div>
+
 <script>
-// パラメータ設定
-const RATES = {
-    NORMAL: 20,     // 通常時の大当り確率
-    ST: 99.4,          // ST中の大当り確率
-    ST_RUSH_RATE: 0.70, // ST突入率
-    ST_TURNS: 163
-};
+    // パラメータ設定
+    const RATES = {
+        NORMAL: 319.7,
+        ST: 99.4,
+        ST_RUSH_RATE: 0.70, // ST突入率 70%
+        ST_TURNS: 163
+    };
 
-// ゲーム状態
-let totalSpins = 0;
-let isST = false;
-let stRemains = 0;
-let holds = [];
-let isSpinning = false;
+    // ゲーム状態 variables
+    let totalSpins = 0;
+    let isST = false;
+    let stRemains = 0;
+    let holds = []; // 保留配列 { isWin: bool }
+    let isSpinning = false;
 
-// DOM要素
-const elReel1 = document.getElementById('reel1');
-const elReel2 = document.getElementById('reel2');
-const elReel3 = document.getElementById('reel3');
-const elEffect = document.getElementById('effect-text');
-const elMode = document.getElementById('mode-display');
-const elStCount = document.getElementById('st-count');
-const elTotalSpins = document.getElementById('total-spins');
+    // DOM要素
+    const elReel1 = document.getElementById('reel1');
+    const elReel2 = document.getElementById('reel2');
+    const elReel3 = document.getElementById('reel3');
+    const elEffect = document.getElementById('effect-text');
+    const elMode = document.getElementById('mode-display');
+    const elStCount = document.getElementById('st-count');
+    const elTotalSpins = document.getElementById('total-spins');
 
-// 玉を打つ（ヘソ入賞）
-function addHold() {
-    if (holds.length >= 4) return;
+    // 玉を打つ（ヘソ入賞）
+    function addHold() {
+        if (holds.length >= 4) return;
 
-    const currentRate = isST ? RATES.ST : RATES.NORMAL;
-    const isWin = Math.random() < (1 / currentRate);
-    
-    holds.push({ isWin: isWin });
-    updateHoldUI();
+        // 入賞時に抽選（先バレ/先読み用）
+        const currentRate = isST ? RATES.ST : RATES.NORMAL;
+        const isWin = Math.random() < (1 / currentRate);
 
-    if (!isSpinning) {
-        startNextSpin();
+        holds.push({ isWin: isWin });
+        updateHoldUI();
+
+        if (!isSpinning) {
+            startNextSpin();
+        }
     }
-}
 
-// 保留表示の更新
-function updateHoldUI() {
-    for (let i = 0; i < 4; i++) {
-        const ball = document.getElementById(`hold${i}`);
-        ball.className = 'hold-ball';
-        if (i < holds.length) {
-            if (holds[i].isWin && Math.random() < 0.8) {
-                ball.classList.add('hold-red');
-            } else if (Math.random() < 0.05) {
-                ball.classList.add('hold-blue');
-            } else {
-                ball.classList.add('hold-blue');
+    // 保留表示の更新
+    function updateHoldUI() {
+        for (let i = 0; i < 4; i++) {
+            const ball = document.getElementById(`hold${i}`);
+            ball.className = 'hold-ball';
+            if (i < holds.length) {
+                // 大当り保留なら確率で赤保留に変化（先読み演出）
+                if (holds[i].isWin && Math.random() < 0.8) {
+                    ball.classList.add('hold-red');
+                } else if (Math.random() < 0.05) {
+                    ball.classList.add('hold-blue');
+                } else {
+                    ball.classList.add('hold-blue');
+                }
             }
         }
     }
-}
 
-// 変動開始
-function startNextSpin() {
-    if (holds.length === 0) {
-        isSpinning = false;
-        return;
+    // 変動開始
+    function startNextSpin() {
+        if (holds.length === 0) {
+            isSpinning = false;
+            return;
+        }
+
+        isSpinning = true;
+        const currentSpinData = holds.shift(); // 先頭の保留を取り出す
+        updateHoldUI();
+
+        totalSpins++;
+        elTotalSpins.textContent = totalSpins;
+
+        if (isST) {
+            stRemains--;
+            elStCount.textContent = `ST残り: ${stRemains}回`;
+        }
+
+        // 演出の決定
+        runSpinAnimation(currentSpinData.isWin);
     }
 
-    isSpinning = true;
-    const currentSpinData = holds.shift();
-    updateHoldUI();
+    // スピンアニメーション演出
+    function runSpinAnimation(isWin) {
+        elEffect.textContent = "";
+        let timer = 0;
+        const spinDuration = isST ? 15 : 30; // ST中は高速消化
 
-    totalSpins++;
-    elTotalSpins.textContent = totalSpins;
-
-    if (isST) {
-        stRemains--;
-        elStCount.textContent = `ST残り: ${stRemains}回`;
-    }
-
-    runSpinAnimation(currentSpinData.isWin);
-}
-
-// スピンアニメーション演出
-function runSpinAnimation(isWin) {
-    elEffect.textContent = "";
-    let timer = 0;
-    const spinDuration = isST ? 20 : 40; 
-
-    // リーチ発生判定（当たり時は100%リーチ、ハズレ時も約15%でガセリーチ）
-    const isReach = isWin || (Math.random() < 0.15);
-    
-    // テンパイ図柄の設定（1〜9）
-    const reachNum = isWin 
-        ? ((Math.random() < RATES.ST_RUSH_RATE || isST) ? 7 : Math.floor(Math.random() * 8) + 1)
-        : Math.floor(Math.random() * 9) + 1;
-
-    let reachStarted = false;
-
-    const interval = setInterval(() => {
-        timer++;
-
-        // 1. 通常のドラム回転
-        if (!reachStarted) {
+        const interval = setInterval(() => {
             elReel1.textContent = Math.floor(Math.random() * 9) + 1;
             elReel2.textContent = Math.floor(Math.random() * 9) + 1;
             elReel3.textContent = Math.floor(Math.random() * 9) + 1;
-        } else {
-            // リーチ成立後：中リールだけが低速で回転
-            elReel2.textContent = Math.floor(Math.random() * 9) + 1;
-        }
+            timer++;
 
-        // 2. 変動中盤でテンパイ（1・3リールを固定）させる
-        if (timer === Math.floor(spinDuration / 2) && !reachStarted) {
-            if (isReach) {
-                reachStarted = true;
-                elReel1.textContent = reachNum;
-                elReel3.textContent = reachNum; // 必ず聴牌（テンパイ）！
-                elEffect.textContent = "🔥 リーチ！！ 🔥";
+            // 中盤でリーチ発生チェック（ハズレ時もたまにリーチ）
+            if (timer === Math.floor(spinDuration / 2)) {
+                if (isWin || Math.random() < 0.15) {
+                    const num = isWin ? (Math.random() < 0.5 ? 7 : 3) : 1;
+                    elReel1.textContent = num;
+                    elReel3.textContent = num;
+                    elEffect.textContent = "リーチ！";
+                }
             }
-        }
 
-        // 3. 規定時間でスクロール終了（確定処理）
-        if (timer >= (reachStarted ? spinDuration + 20 : spinDuration)) {
-            clearInterval(interval);
-            finalizeSpin(isWin, isReach, reachNum);
-        }
-    }, 50);
-}
+            if (timer >= spinDuration) {
+                clearInterval(interval);
+                finalizeSpin(isWin);
+            }
+        }, 50);
+    }
 
-// 変動結果の確定処理
-function finalizeSpin(isWin, isReach, reachNum) {
-    if (isWin) {
-        // 【大当り】3つのリールをすべて揃える
-        elReel1.textContent = reachNum;
-        elReel2.textContent = reachNum;
-        elReel3.textContent = reachNum;
+    // 変動結果の確定処理
+    function finalizeSpin(isWin) {
+        if (isWin) {
+            // 大当り
+            const winNum = (Math.random() < RATES.ST_RUSH_RATE || isST) ? 7 : 2;
+            elReel1.textContent = winNum;
+            elReel2.textContent = winNum;
+            elReel3.textContent = winNum;
 
-        if (reachNum === 7) {
-            elEffect.textContent = "【超大当り】ST「インパクトモード」突入！";
-            isST = true;
-            stRemains = RATES.ST_TURNS;
+            if (winNum === 7) {
+                elEffect.textContent = "【超大当り】ST「インパクトモード」突入！";
+                isST = true;
+                stRemains = RATES.ST_TURNS;
+            } else {
+                elEffect.textContent = "【大当り】通常大当り";
+                isST = false;
+                stRemains = 0;
+            }
         } else {
-            elEffect.textContent = "【大当り】通常大当り";
-            isST = false;
-            stRemains = 0;
-        }
-    } else {
-        if (isReach) {
-            // 【ハズレリーチ】左右は揃うが、中央だけ1つズレる
-            const missCenter = (reachNum % 9) + 1;
-            elReel1.textContent = reachNum;
-            elReel2.textContent = missCenter;
-            elReel3.textContent = reachNum;
-            elEffect.textContent = "ハズレ...";
-        } else {
-            // 【完全ハズレ】バラケ目
+            // ハズレ
             elReel1.textContent = 1;
             elReel2.textContent = 3;
             elReel3.textContent = 5;
-            elEffect.textContent = "";
+
+            // ST終了判定
+            if (isST && stRemains <= 0) {
+                isST = false;
+                elEffect.textContent = "ST終了...";
+            }
         }
 
-        // ST終了判定
-        if (isST && stRemains <= 0) {
-            isST = false;
-            elEffect.textContent = "ST終了...";
+        // モードUIの更新
+        if (isST) {
+            elMode.textContent = "インパクトモード (ST)";
+            elMode.className = "mode-st";
+            elStCount.textContent = `ST残り: ${stRemains}回`;
+        } else {
+            elMode.textContent = "通常モード";
+            elMode.className = "mode-normal";
+            elStCount.textContent = "";
         }
-    }
 
-    // モードUIの更新
-    if (isST) {
-        elMode.textContent = "インパクトモード (ST)";
-        elMode.className = "mode-st";
-        elStCount.textContent = `ST残り: ${stRemains}回`;
-    } else {
-        elMode.textContent = "通常モード";
-        elMode.className = "mode-normal";
-        elStCount.textContent = "";
+        // 1秒後に次の変動へ
+        setTimeout(() => {
+            startNextSpin();
+        }, 1000);
     }
-
-    // 次の変動へ
-    setTimeout(() => {
-        startNextSpin();
-    }, 1000);
-}
 </script>
 
 </body>
