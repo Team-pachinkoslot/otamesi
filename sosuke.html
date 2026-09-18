@@ -1,185 +1,198 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <title>エヴァ15風 パチンコ SIM</title>
+<meta charset="UTF-8">
+<title>エヴァ15風 パチンコ SIM</title>
 
-    <style>
-        body {
-            background-color: #111;
-            color: #fff;
-            font-family: Arial, sans-serif;
-            text-align: center;
-            margin: 0;
-            padding: 20px;
-        }
+<style>
+body {
+    background-color: #111;
+    color: #fff;
+    font-family: Arial, sans-serif;
+    text-align: center;
+    margin: 0;
+    padding: 20px;
+}
 
-        #game-container {
-            width: 420px;
-            margin: 0 auto;
-            background-color: #222;
-            border: 4px solid #555;
-            border-radius: 10px;
-            padding: 15px;
-            box-shadow: 0 0 20px rgba(128, 0, 128, 0.5);
-        }
+#game-container {
+    width: 420px;
+    margin: 0 auto;
+    background-color: #222;
+    border: 4px solid #555;
+    border-radius: 10px;
+    padding: 15px;
+    box-shadow: 0 0 20px rgba(128, 0, 128, 0.5);
+}
 
-        #status-bar {
-            display: flex;
-            justify-content: space-between;
-            background: #333;
-            padding: 8px;
-            margin-bottom: 10px;
-            font-weight: bold;
-            font-size: 14px;
-        }
+#status-bar {
+    display: flex;
+    justify-content: space-between;
+    background: #333;
+    padding: 8px;
+    margin-bottom: 10px;
+    font-weight: bold;
+    font-size: 14px;
+}
 
-        .mode-normal {
-            color: #00ffff;
-        }
+.mode-normal { color: #00ffff; }
+.mode-st {
+    color: #ff00ff;
+    animation: blink 0.5s infinite alternate;
+}
+.mode-jititan { color: #00ff66; }
 
-        .mode-st {
-            color: #ff00ff;
-            animation: blink 0.5s infinite alternate;
-        }
+@keyframes blink {
+    from { opacity: 1; }
+    to { opacity: 0.6; }
+}
 
-        .mode-jititan {
-            color: #00ff66;
-        }
+#screen {
+    background: #000;
+    border: 2px solid #888;
+    height: 220px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+    transition: 0.3s;
+}
 
-        @keyframes blink {
-            from { opacity: 1; }
-            to { opacity: 0.6; }
-        }
+#reels {
+    display: flex;
+    gap: 15px;
+    font-size: 64px;
+    font-weight: bold;
+    text-shadow: 0 0 10px #fff;
+}
 
-        #screen {
-            background: #000;
-            border: 2px solid #888;
-            height: 220px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            position: relative;
-            overflow: hidden;
-        }
+#effect-text {
+    font-size: 18px;
+    color: #ffcc00;
+    height: 35px;
+    margin-top: 15px;
+    font-weight: bold;
+}
 
-        #reels {
-            display: flex;
-            gap: 15px;
-            font-size: 64px;
-            font-weight: bold;
-            text-shadow: 0 0 10px #fff;
-        }
+.hold-ball {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #444;
+    border: 1px solid #888;
+}
 
-        #effect-text {
-            font-size: 18px;
-            color: #ffcc00;
-            height: 30px;
-            margin-top: 15px;
-            font-weight: bold;
-        }
+.hold-blue {
+    background: #0088ff;
+    box-shadow: 0 0 5px #0088ff;
+}
 
-        #hold-container {
-            margin: 15px 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 10px;
-        }
+.hold-red {
+    background: #ff0000;
+    box-shadow: 0 0 8px #ff0000;
+}
 
-        .hold-ball {
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background: #444;
-            border: 1px solid #888;
-        }
+#hold-container {
+    margin: 15px 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
 
-        .hold-blue {
-            background: #0088ff;
-            box-shadow: 0 0 5px #0088ff;
-        }
+button {
+    padding: 12px 24px;
+    font-size: 18px;
+    background: linear-gradient(135deg,#8a2be2,#4b0082);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
 
-        .hold-red {
-            background: #ff0000;
-            box-shadow: 0 0 8px #ff0000;
-        }
+#history-box {
+    margin-top: 15px;
+    background-color: #1a1a1a;
+    border: 1px solid #444;
+    border-radius: 5px;
+    padding: 10px;
+    text-align: left;
+    font-size: 13px;
+}
 
-        #controls {
-            margin-top: 15px;
-        }
+#history-title {
+    font-weight: bold;
+    color: #ffcc00;
+    margin-bottom: 5px;
+    border-bottom: 1px solid #444;
+    padding-bottom: 3px;
+    display: flex;
+    justify-content: space-between;
+}
 
-        button {
-            padding: 12px 24px;
-            font-size: 18px;
-            background: linear-gradient(135deg, #8a2be2, #4b0082);
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-        }
+#history-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    max-height: 120px;
+    overflow-y: auto;
+}
 
-        button:active {
-            transform: translateY(2px);
-        }
+#history-list li {
+    padding: 3px 0;
+    border-bottom: 1px dashed #333;
+    display: flex;
+    justify-content: space-between;
+}
 
-        /* 履歴表示エリア */
-        #history-box {
-            margin-top: 15px;
-            background-color: #1a1a1a;
-            border: 1px solid #444;
-            border-radius: 5px;
-            padding: 10px;
-            text-align: left;
-            font-size: 13px;
-        }
+.tag-st {
+    color: #ff00ff;
+    font-weight: bold;
+}
 
-        #history-title {
-            font-weight: bold;
-            color: #ffcc00;
-            margin-bottom: 5px;
-            border-bottom: 1px solid #444;
-            padding-bottom: 3px;
-            display: flex;
-            justify-content: space-between;
-        }
+.tag-jititan {
+    color: #00ff66;
+}
 
-        #history-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-            max-height: 120px;
-            overflow-y: auto;
-        }
+.tag-special {
+    color: #ffd700;
+    font-weight: bold;
+}
 
-        #history-list li {
-            padding: 3px 0;
-            border-bottom: 1px dashed #333;
-            display: flex;
-            justify-content: space-between;
-        }
+/* 全回転演出 */
 
-        .tag-st {
-            color: #ff00ff;
-            font-weight: bold;
-        }
+.full-rotation {
+    animation: rainbowScreen 0.3s infinite alternate;
+}
 
-        .tag-normal {
-            color: #00ffff;
-        }
+@keyframes rainbowScreen {
+    0% {
+        box-shadow: inset 0 0 50px #ff0000;
+    }
+    25% {
+        box-shadow: inset 0 0 50px #ffff00;
+    }
+    50% {
+        box-shadow: inset 0 0 50px #00ffff;
+    }
+    75% {
+        box-shadow: inset 0 0 50px #ff00ff;
+    }
+    100% {
+        box-shadow: inset 0 0 50px #ffffff;
+    }
+}
 
-        .tag-jititan {
-            color: #00ff66;
-        }
-
-        .tag-special {
-            color: #ffd700;
-            font-weight: bold;
-            text-shadow: 0 0 5px #ff8800;
-        }
-    </style>
+.full-text {
+    font-size: 26px !important;
+    color: #fff !important;
+    text-shadow:
+        0 0 5px #fff,
+        0 0 10px #ff00ff,
+        0 0 20px #00ffff;
+}
+</style>
 </head>
 
 <body>
@@ -199,7 +212,6 @@
         </span>
     </div>
 
-
     <div id="screen">
 
         <div id="reels">
@@ -212,7 +224,6 @@
 
     </div>
 
-
     <div id="hold-container">
 
         <span>保留:</span>
@@ -224,21 +235,9 @@
 
     </div>
 
-
-    <div id="controls">
-
-        <button
-            id="shoot-btn"
-            onclick="addHold()">
-
-            玉を打つ (ヘソ入賞)
-
-        </button>
-
-    </div>
-
-
-    <!-- 大当り履歴 -->
+    <button onclick="addHold()">
+        玉を打つ (ヘソ入賞)
+    </button>
 
     <div id="history-box">
 
@@ -255,83 +254,73 @@
         </div>
 
         <ul id="history-list">
-
             <li style="color:#888;">
                 履歴はありません
             </li>
-
         </ul>
 
     </div>
 
 </div>
 
-
 <script>
 
-/* =========================
-   パラメータ
-========================= */
+/* ========================================
+   確率設定
+======================================== */
 
 const RATES = {
 
-    NORMAL: 20.0,
-    // NORMAL: 319.7,
+    // 通常時の大当り確率
+    NORMAL: 319.7,
 
+    // ST中
     ST: 99.4,
 
+    // 通常当たりの59%がRUSH
     ODD_WIN_RATE: 0.59,
 
+    // ST回数
     ST_TURNS: 163,
 
+    // 時短
     JITITAN_TURNS: 100,
 
-    // 大当りのうち135特殊当たりになる割合
+    // 大当たりの10%を135特殊当たり
     SPECIAL_135_RATE: 0.10
 };
 
 
-/* =========================
+/* ========================================
    図柄
-========================= */
+======================================== */
 
-const ODD_NUMBERS = [
-    1,3,5,7,9
-];
+const ODD_NUMBERS = [1,3,5,7,9];
 
-const EVEN_NUMBERS = [
-    2,4,6,8
-];
+const EVEN_NUMBERS = [2,4,6,8];
 
-const ALL_NUMBERS = [
-    1,2,3,4,5,6,7,8,9
-];
+const ALL_NUMBERS = [1,2,3,4,5,6,7,8,9];
 
 
-/* =========================
+/* ========================================
    135特殊当たり
-========================= */
+======================================== */
 
 const SPECIAL_135_PATTERNS = [
 
     [1,3,5],
-
     [1,5,3],
-
     [3,1,5],
-
     [3,5,1],
-
     [5,1,3],
-
     [5,3,1]
 
 ];
 
 
-/* =========================
-   ランダムハズレ目生成
-========================= */
+/* ========================================
+   ランダムハズレ
+======================================== */
 
 function getRandomLosePattern(){
 
@@ -340,45 +329,28 @@ function getRandomLosePattern(){
         const pattern = [
 
             Math.floor(Math.random()*9)+1,
-
             Math.floor(Math.random()*9)+1,
-
             Math.floor(Math.random()*9)+1
 
         ];
 
-
-        /* -------------------------
-           135系かチェック
-        ------------------------- */
-
         const sorted =
             [...pattern].sort((a,b)=>a-b);
+
+        /* 135系は禁止 */
 
         const is135 =
 
             sorted[0] === 1 &&
-
             sorted[1] === 3 &&
-
             sorted[2] === 5;
 
-
-        /* -------------------------
-           ゾロ目チェック
-           111 / 222 / 333 ...
-        ------------------------- */
+        /* ゾロ目は禁止 */
 
         const isAllSame =
 
             pattern[0] === pattern[1] &&
-
             pattern[1] === pattern[2];
-
-
-        /* -------------------------
-           135でもゾロ目でもなければ採用
-        ------------------------- */
 
         if(!is135 && !isAllSame){
 
@@ -391,9 +363,9 @@ function getRandomLosePattern(){
 }
 
 
-/* =========================
-   ゲーム状態
-========================= */
+/* ========================================
+   状態
+======================================== */
 
 let totalSpins = 0;
 
@@ -407,11 +379,6 @@ let holds = [];
 
 let isSpinning = false;
 
-
-/* =========================
-   履歴
-========================= */
-
 let winHistory = [];
 
 let currentChain = 0;
@@ -421,9 +388,9 @@ let maxChain = 0;
 let totalWinCount = 0;
 
 
-/* =========================
+/* ========================================
    DOM
-========================= */
+======================================== */
 
 const elReel1 =
     document.getElementById("reel1");
@@ -455,35 +422,31 @@ const elTotalWins =
 const elMaxChain =
     document.getElementById("max-chain");
 
+const elScreen =
+    document.getElementById("screen");
 
-/* =========================
+
+/* ========================================
    玉を打つ
-========================= */
+======================================== */
 
 function addHold(){
 
-    if(holds.length >= 4){
-
+    if(holds.length >= 4)
         return;
-
-    }
-
 
     const currentRate =
 
-        (gameMode === "ST")
+        gameMode === "ST"
 
         ? RATES.ST
 
         : RATES.NORMAL;
 
-
     const isWin =
 
         Math.random() <
-
         (1/currentRate);
-
 
     holds.push({
 
@@ -491,9 +454,7 @@ function addHold(){
 
     });
 
-
     updateHoldUI();
-
 
     if(!isSpinning){
 
@@ -504,9 +465,9 @@ function addHold(){
 }
 
 
-/* =========================
-   保留表示
-========================= */
+/* ========================================
+   保留
+======================================== */
 
 function updateHoldUI(){
 
@@ -520,7 +481,6 @@ function updateHoldUI(){
         ball.className =
             "hold-ball";
 
-
         if(i < holds.length){
 
             if(
@@ -533,6 +493,7 @@ function updateHoldUI(){
                 );
 
             }
+
             else{
 
                 ball.classList.add(
@@ -548,9 +509,9 @@ function updateHoldUI(){
 }
 
 
-/* =========================
+/* ========================================
    変動開始
-========================= */
+======================================== */
 
 function startNextSpin(){
 
@@ -562,25 +523,19 @@ function startNextSpin(){
 
     }
 
-
     isSpinning = true;
-
 
     const currentSpinData =
         holds.shift();
 
-
     updateHoldUI();
-
 
     totalSpins++;
 
     spinAtLastWin++;
 
-
     elTotalSpins.textContent =
         totalSpins;
-
 
     if(gameMode !== "NORMAL"){
 
@@ -591,7 +546,6 @@ function startNextSpin(){
 
     }
 
-
     runSpinAnimation(
         currentSpinData.isWin
     );
@@ -599,9 +553,9 @@ function startNextSpin(){
 }
 
 
-/* =========================
+/* ========================================
    次の数字
-========================= */
+======================================== */
 
 function getNextNum(current){
 
@@ -613,20 +567,21 @@ function getNextNum(current){
 }
 
 
-/* =========================
-   スピン処理
-========================= */
+/* ========================================
+   メイン変動
+======================================== */
 
 function runSpinAnimation(isWin){
 
     elEffect.textContent = "";
 
+    elEffect.className = "";
 
     const isReach =
 
         isWin ||
 
-        (Math.random() < 0.15);
+        Math.random() < 0.15;
 
 
     let targetLeft;
@@ -639,21 +594,20 @@ function runSpinAnimation(isWin){
 
     let is135Win = false;
 
+    let is7Win = false;
 
-/* =========================
-   大当り
-========================= */
+
+/* ========================================
+   大当たり
+======================================== */
 
     if(isWin){
 
-        /* -------------------------
-           135特殊当たり抽選
-        ------------------------- */
+        /* 135特殊当たり抽選 */
 
         is135Win =
 
             Math.random() <
-
             RATES.SPECIAL_135_RATE;
 
 
@@ -664,12 +618,13 @@ function runSpinAnimation(isWin){
                 SPECIAL_135_PATTERNS[
 
                     Math.floor(
+
                         Math.random() *
                         SPECIAL_135_PATTERNS.length
+
                     )
 
                 ];
-
 
             targetLeft =
                 pattern[0];
@@ -680,21 +635,16 @@ function runSpinAnimation(isWin){
             targetRight =
                 pattern[2];
 
-
-            /*
-             135はRUSH確定
-            */
+            /* RUSH確定 */
 
             isOddWin = true;
 
         }
 
 
-        /* -------------------------
-           通常のゾロ目当たり
-        ------------------------- */
-
         else{
+
+            /* ST・時短中はRUSH */
 
             if(
                 gameMode === "ST" ||
@@ -704,12 +654,12 @@ function runSpinAnimation(isWin){
                 isOddWin = true;
 
             }
+
             else{
 
                 isOddWin =
 
                     Math.random() <
-
                     RATES.ODD_WIN_RATE;
 
             }
@@ -729,40 +679,68 @@ function runSpinAnimation(isWin){
                 winArray[
 
                     Math.floor(
+
                         Math.random() *
                         winArray.length
+
                     )
 
                 ];
 
 
-            targetLeft =
-                winNum;
+            targetLeft = winNum;
 
-            targetCenter =
-                winNum;
+            targetCenter = winNum;
 
-            targetRight =
-                winNum;
+            targetRight = winNum;
+
+
+            /* ==========================
+               777なら全回転
+            ========================== */
+
+            if(winNum === 7){
+
+                is7Win = true;
+
+                isOddWin = true;
+
+            }
 
         }
 
     }
 
 
-/* =========================
+/* ========================================
    リーチハズレ
-========================= */
+======================================== */
 
     else if(isReach){
 
+        /*
+          7は除外。
+
+          つまり7テンが発生したのに
+          ハズれることはない。
+        */
+
+        const LOSE_REACH_NUMBERS = [
+
+            1,2,3,4,5,6,8,9
+
+        ];
+
+
         const reachNum =
 
-            ALL_NUMBERS[
+            LOSE_REACH_NUMBERS[
 
                 Math.floor(
+
                     Math.random() *
-                    ALL_NUMBERS.length
+                    LOSE_REACH_NUMBERS.length
+
                 )
 
             ];
@@ -780,15 +758,14 @@ function runSpinAnimation(isWin){
     }
 
 
-/* =========================
-   通常ハズレ
-========================= */
+/* ========================================
+   普通のハズレ
+======================================== */
 
     else{
 
         const pattern =
             getRandomLosePattern();
-
 
         targetLeft =
             pattern[0];
@@ -802,16 +779,28 @@ function runSpinAnimation(isWin){
     }
 
 
-/* =========================
-   回転アニメーション
-========================= */
+/* ========================================
+   777なら専用処理
+======================================== */
+
+    if(is7Win){
+
+        runFullRotation();
+
+        return;
+
+    }
+
+
+/* ========================================
+   通常変動
+======================================== */
 
     let step = 0;
 
+    const spinTime =
 
-    const spinTimeLeftRight =
-
-        (gameMode === "ST")
+        gameMode === "ST"
 
         ? 8
 
@@ -823,7 +812,6 @@ function runSpinAnimation(isWin){
         setInterval(()=>{
 
             step++;
-
 
             elReel1.textContent =
                 getNextNum(
@@ -841,14 +829,9 @@ function runSpinAnimation(isWin){
                 );
 
 
-            if(
-                step >=
-                spinTimeLeftRight
-            ){
+            if(step >= spinTime){
 
-                clearInterval(
-                    interval
-                );
+                clearInterval(interval);
 
 
                 elReel1.textContent =
@@ -867,21 +850,11 @@ function runSpinAnimation(isWin){
                     let centerStep = 0;
 
 
-                    const centerSpinTime =
-
-                        (gameMode === "ST")
-
-                        ? 10
-
-                        : 25;
-
-
                     const centerInterval =
 
                         setInterval(()=>{
 
                             centerStep++;
-
 
                             elReel2.textContent =
 
@@ -892,10 +865,7 @@ function runSpinAnimation(isWin){
                                 );
 
 
-                            if(
-                                centerStep >=
-                                centerSpinTime
-                            ){
+                            if(centerStep >= 25){
 
                                 clearInterval(
                                     centerInterval
@@ -906,10 +876,6 @@ function runSpinAnimation(isWin){
                                     targetCenter;
 
 
-/* =========================
-   大当り確定
-========================= */
-
                                 if(isWin){
 
                                     recordWinHistory(
@@ -918,12 +884,14 @@ function runSpinAnimation(isWin){
 
                                         targetCenter,
 
-                                        is135Win
+                                        is135Win,
+
+                                        false
 
                                     );
 
 
-                                    /* 135特殊当たり */
+                                    /* 135 */
 
                                     if(is135Win){
 
@@ -931,10 +899,8 @@ function runSpinAnimation(isWin){
 
                                             `【${targetLeft}${targetCenter}${targetRight}】特殊大当り！ RUSH確定！`;
 
-
                                         gameMode =
                                             "ST";
-
 
                                         modeRemains =
                                             RATES.ST_TURNS;
@@ -942,7 +908,7 @@ function runSpinAnimation(isWin){
                                     }
 
 
-                                    /* 通常奇数当たり */
+                                    /* 奇数 */
 
                                     else if(isOddWin){
 
@@ -950,10 +916,8 @@ function runSpinAnimation(isWin){
 
                                             `【${targetCenter}揃い】ST「インパクトモード」突入！`;
 
-
                                         gameMode =
                                             "ST";
-
 
                                         modeRemains =
                                             RATES.ST_TURNS;
@@ -961,18 +925,16 @@ function runSpinAnimation(isWin){
                                     }
 
 
-                                    /* 偶数当たり */
+                                    /* 偶数 */
 
                                     else{
 
                                         elEffect.textContent =
 
-                                            `【${targetCenter}揃い】「チャンスタイム(時短100回)」突入`;
-
+                                            `【${targetCenter}揃い】チャンスタイム突入`;
 
                                         gameMode =
                                             "JITITAN";
-
 
                                         modeRemains =
                                             RATES.JITITAN_TURNS;
@@ -1014,31 +976,204 @@ function runSpinAnimation(isWin){
 }
 
 
-/* =========================
-   大当り履歴
-========================= */
+/* ========================================
+   🌈 全回転演出 🌈
+======================================== */
+
+function runFullRotation(){
+
+    /* まず7テン */
+
+    elReel1.textContent = 7;
+
+    elReel3.textContent = 7;
+
+    elEffect.textContent =
+        "！！ 7テンパイ ！！";
+
+
+    setTimeout(()=>{
+
+        /* 暗転 */
+
+        elReel1.textContent = "";
+
+        elReel2.textContent = "";
+
+        elReel3.textContent = "";
+
+        elEffect.textContent =
+            "……";
+
+        elScreen.style.background =
+            "#000";
+
+    },700);
+
+
+    setTimeout(()=>{
+
+        /* 全回転開始 */
+
+        elScreen.classList.add(
+            "full-rotation"
+        );
+
+        elEffect.className =
+            "full-text";
+
+        elEffect.textContent =
+            "🌈 全 回 転 🌈";
+
+        let index = 0;
+
+        const fullNumbers = [
+
+            1,3,5,7,9
+
+        ];
+
+
+        const fullInterval =
+
+            setInterval(()=>{
+
+                const num =
+
+                    fullNumbers[
+                        index %
+                        fullNumbers.length
+                    ];
+
+
+                elReel1.textContent =
+                    num;
+
+                elReel2.textContent =
+                    num;
+
+                elReel3.textContent =
+                    num;
+
+
+                index++;
+
+
+                /* 数回見せる */
+
+                if(index >= 12){
+
+                    clearInterval(
+                        fullInterval
+                    );
+
+
+                    /* 最後は777 */
+
+                    elReel1.textContent =
+                        7;
+
+                    elReel2.textContent =
+                        7;
+
+                    elReel3.textContent =
+                        7;
+
+
+                    elEffect.textContent =
+                        "🌈 ７７７ 🌈";
+
+
+                    setTimeout(()=>{
+
+                        elEffect.textContent =
+                            "🎉 RUSH確定！！ 🎉";
+
+
+                        /* 履歴 */
+
+                        recordWinHistory(
+
+                            true,
+
+                            7,
+
+                            false,
+
+                            true
+
+                        );
+
+
+                        /* RUSH突入 */
+
+                        gameMode =
+                            "ST";
+
+                        modeRemains =
+                            RATES.ST_TURNS;
+
+
+                        elScreen.classList.remove(
+                            "full-rotation"
+                        );
+
+                        elEffect.className =
+                            "";
+
+
+                        finishSpin();
+
+
+                    },1000);
+
+                }
+
+            },350);
+
+    },1400);
+
+}
+
+
+/* ========================================
+   大当たり履歴
+======================================== */
 
 function recordWinHistory(
     isOddWin,
     winNum,
-    is135Win
+    is135Win,
+    is7Win
 ){
 
     totalWinCount++;
-
 
     let typeName = "";
 
     let cssClass = "";
 
-    let displayNum = winNum;
+    let displayNum =
+        winNum;
 
+
+    /* ST中 */
 
     if(gameMode === "ST"){
 
         currentChain++;
 
-        if(is135Win){
+        if(is7Win){
+
+            typeName =
+                `${currentChain}連目 (全回転)`;
+
+            cssClass =
+                "tag-special";
+
+        }
+
+        else if(is135Win){
 
             typeName =
                 `${currentChain}連目 (135特殊当り)`;
@@ -1050,6 +1185,7 @@ function recordWinHistory(
                 "135";
 
         }
+
         else{
 
             typeName =
@@ -1063,14 +1199,23 @@ function recordWinHistory(
     }
 
 
-    else if(
-        gameMode === "JITITAN"
-    ){
+    /* 時短中 */
+
+    else if(gameMode === "JITITAN"){
 
         currentChain++;
 
+        if(is7Win){
 
-        if(is135Win){
+            typeName =
+                `${currentChain}連目 (全回転)`;
+
+            cssClass =
+                "tag-special";
+
+        }
+
+        else if(is135Win){
 
             typeName =
                 `${currentChain}連目 (135特殊当り)`;
@@ -1082,6 +1227,7 @@ function recordWinHistory(
                 "135";
 
         }
+
         else{
 
             typeName =
@@ -1095,12 +1241,24 @@ function recordWinHistory(
     }
 
 
+    /* 通常時 */
+
     else{
 
         currentChain = 1;
 
 
-        if(is135Win){
+        if(is7Win){
+
+            typeName =
+                "初当り (全回転・RUSH確定)";
+
+            cssClass =
+                "tag-special";
+
+        }
+
+        else if(is135Win){
 
             typeName =
                 "初当り (135・RUSH確定)";
@@ -1113,7 +1271,6 @@ function recordWinHistory(
 
         }
 
-
         else if(isOddWin){
 
             typeName =
@@ -1123,7 +1280,6 @@ function recordWinHistory(
                 "tag-st";
 
         }
-
 
         else{
 
@@ -1138,10 +1294,7 @@ function recordWinHistory(
     }
 
 
-    if(
-        currentChain >
-        maxChain
-    ){
+    if(currentChain > maxChain){
 
         maxChain =
             currentChain;
@@ -1150,9 +1303,6 @@ function recordWinHistory(
 
 
     winHistory.unshift({
-
-        count:
-            totalWinCount,
 
         spins:
             spinAtLastWin,
@@ -1177,9 +1327,9 @@ function recordWinHistory(
 }
 
 
-/* =========================
-   履歴UI更新
-========================= */
+/* ========================================
+   履歴表示
+======================================== */
 
 function updateHistoryUI(){
 
@@ -1189,8 +1339,8 @@ function updateHistoryUI(){
     elMaxChain.textContent =
         maxChain;
 
-
-    elHistoryList.innerHTML = "";
+    elHistoryList.innerHTML =
+        "";
 
 
     winHistory
@@ -1208,20 +1358,16 @@ function updateHistoryUI(){
                 <span>
 
                     <b class="${item.css}">
-
                         ${item.type}
-
                     </b>
 
                     (${item.num}図柄)
 
                 </span>
 
-
                 <span>
 
                     <b>${item.spins}</b>
-
                     回転目
 
                 </span>
@@ -1229,17 +1375,18 @@ function updateHistoryUI(){
             `;
 
 
-            elHistoryList
-                .appendChild(li);
+            elHistoryList.appendChild(
+                li
+            );
 
         });
 
 }
 
 
-/* =========================
+/* ========================================
    変動終了
-========================= */
+======================================== */
 
 function finishSpin(){
 
@@ -1250,27 +1397,26 @@ function finishSpin(){
 
         elEffect.textContent =
 
-            `${gameMode === "ST"
-                ? "ST"
-                : "時短"
-            }終了...`;
+            gameMode === "ST"
+
+            ? "ST終了..."
+
+            : "時短終了...";
 
 
         gameMode =
             "NORMAL";
 
+        modeRemains =
+            0;
 
-        modeRemains = 0;
-
-
-        currentChain = 0;
+        currentChain =
+            0;
 
     }
 
 
-    if(
-        gameMode === "ST"
-    ){
+    if(gameMode === "ST"){
 
         elMode.textContent =
             "インパクトモード (ST)";
