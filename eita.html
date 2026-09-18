@@ -186,7 +186,7 @@
 
 <script>
     // 音声ファイルの指定
-    const seReachNormal = new Audio('');
+    const seReachNormal = new Audio('Team-pachinkoslot/otamesi/sound_01.mp3');
     const seReachPremium = new Audio('Team-pachinkoslot/otamesi/sound_01.mp3'); // ST中リーチの10%で鳴る確定音
 
     // パラメータ設定
@@ -356,7 +356,7 @@
                 if (isReach) {
                     // ★ ST(ラッシュ)中のリーチ発生時、10%の確率で特殊リーチ音を鳴らす
                     let isSpecialReachSound = false;
-                    if (gameMode === "ST" && Math.random() < 1) {
+                    if (gameMode === "ST" && Math.random() < 1.00) {
                         isSpecialReachSound = true;
                     }
 
