@@ -35,10 +35,12 @@ body {
 }
 
 .mode-normal { color: #00ffff; }
+
 .mode-st {
     color: #ff00ff;
     animation: blink 0.5s infinite alternate;
 }
+
 .mode-jititan { color: #00ff66; }
 
 @keyframes blink {
@@ -75,6 +77,14 @@ body {
     font-weight: bold;
 }
 
+#hold-container {
+    margin: 15px 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+
 .hold-ball {
     width: 20px;
     height: 20px;
@@ -93,22 +103,41 @@ body {
     box-shadow: 0 0 8px #ff0000;
 }
 
-#hold-container {
-    margin: 15px 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 10px;
+#controls {
+    margin-top: 15px;
 }
 
 button {
-    padding: 12px 24px;
-    font-size: 18px;
+    padding: 12px 20px;
+    font-size: 16px;
     background: linear-gradient(135deg,#8a2be2,#4b0082);
     color: white;
     border: none;
     border-radius: 5px;
     cursor: pointer;
+    margin: 4px;
+}
+
+button:active {
+    transform: translateY(2px);
+}
+
+/* デバッグボタン */
+.debug-button {
+    background: linear-gradient(135deg,#cc9900,#8b6508);
+    font-size: 14px;
+}
+
+#debug-area {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed #555;
+}
+
+#debug-title {
+    font-size: 12px;
+    color: #888;
+    margin-bottom: 3px;
 }
 
 #history-box {
@@ -160,25 +189,32 @@ button {
     font-weight: bold;
 }
 
-/* 全回転演出 */
+/* ==========================
+   全回転演出
+========================== */
 
 .full-rotation {
     animation: rainbowScreen 0.3s infinite alternate;
 }
 
 @keyframes rainbowScreen {
+
     0% {
         box-shadow: inset 0 0 50px #ff0000;
     }
+
     25% {
         box-shadow: inset 0 0 50px #ffff00;
     }
+
     50% {
         box-shadow: inset 0 0 50px #00ffff;
     }
+
     75% {
         box-shadow: inset 0 0 50px #ff00ff;
     }
+
     100% {
         box-shadow: inset 0 0 50px #ffffff;
     }
@@ -187,6 +223,7 @@ button {
 .full-text {
     font-size: 26px !important;
     color: #fff !important;
+
     text-shadow:
         0 0 5px #fff,
         0 0 10px #ff00ff,
@@ -195,11 +232,14 @@ button {
 </style>
 </head>
 
+
 <body>
 
 <div id="game-container">
 
+    <!-- ステータス -->
     <div id="status-bar">
+
         <span id="mode-display" class="mode-normal">
             通常モード
         </span>
@@ -210,8 +250,11 @@ button {
             回転数:
             <span id="total-spins">0</span>
         </span>
+
     </div>
 
+
+    <!-- 液晶 -->
     <div id="screen">
 
         <div id="reels">
@@ -224,6 +267,8 @@ button {
 
     </div>
 
+
+    <!-- 保留 -->
     <div id="hold-container">
 
         <span>保留:</span>
@@ -235,15 +280,46 @@ button {
 
     </div>
 
-    <button onclick="addHold()">
-        玉を打つ (ヘソ入賞)
-    </button>
 
+    <!-- 通常ボタン -->
+    <div id="controls">
+
+        <button onclick="addHold()">
+            玉を打つ (ヘソ入賞)
+        </button>
+
+    </div>
+
+
+    <!-- ==========================
+         デバッグ
+    =========================== -->
+
+    <div id="debug-area">
+
+        <div id="debug-title">
+            DEBUG
+        </div>
+
+        <button
+            class="debug-button"
+            onclick="debug7Win()">
+
+            🌈 デバッグ：7図柄当たり
+
+        </button>
+
+    </div>
+
+
+    <!-- 大当たり履歴 -->
     <div id="history-box">
 
         <div id="history-title">
 
-            <span>大当り履歴</span>
+            <span>
+                大当り履歴
+            </span>
 
             <span>
                 通算大当り:
@@ -254,14 +330,17 @@ button {
         </div>
 
         <ul id="history-list">
+
             <li style="color:#888;">
                 履歴はありません
             </li>
+
         </ul>
 
     </div>
 
 </div>
+
 
 <script>
 
@@ -271,23 +350,22 @@ button {
 
 const RATES = {
 
-    // 通常時の大当り確率
-    NORMAL: 10.1,
-    // NORMAL: 319.7,
+    // 通常時
+    NORMAL: 319.7,
 
     // ST中
     ST: 99.4,
 
-    // 通常当たりの59%がRUSH
+    // 通常当たりのRUSH割合
     ODD_WIN_RATE: 0.59,
 
-    // ST回数
+    // ST回転数
     ST_TURNS: 163,
 
-    // 時短
+    // 時短回転数
     JITITAN_TURNS: 100,
 
-    // 大当たりの10%を135特殊当たり
+    // 大当たりの10%で135特殊当たり
     SPECIAL_135_RATE: 0.10
 };
 
@@ -296,11 +374,17 @@ const RATES = {
    図柄
 ======================================== */
 
-const ODD_NUMBERS = [1,3,5,7,9];
+const ODD_NUMBERS = [
+    1,3,5,7,9
+];
 
-const EVEN_NUMBERS = [2,4,6,8];
+const EVEN_NUMBERS = [
+    2,4,6,8
+];
 
-const ALL_NUMBERS = [1,2,3,4,5,6,7,8,9];
+const ALL_NUMBERS = [
+    1,2,3,4,5,6,7,8,9
+];
 
 
 /* ========================================
@@ -330,13 +414,17 @@ function getRandomLosePattern(){
         const pattern = [
 
             Math.floor(Math.random()*9)+1,
+
             Math.floor(Math.random()*9)+1,
+
             Math.floor(Math.random()*9)+1
 
         ];
 
+
         const sorted =
             [...pattern].sort((a,b)=>a-b);
+
 
         /* 135系は禁止 */
 
@@ -346,12 +434,14 @@ function getRandomLosePattern(){
             sorted[1] === 3 &&
             sorted[2] === 5;
 
+
         /* ゾロ目は禁止 */
 
         const isAllSame =
 
             pattern[0] === pattern[1] &&
             pattern[1] === pattern[2];
+
 
         if(!is135 && !isAllSame){
 
@@ -365,7 +455,7 @@ function getRandomLosePattern(){
 
 
 /* ========================================
-   状態
+   ゲーム状態
 ======================================== */
 
 let totalSpins = 0;
@@ -379,6 +469,11 @@ let modeRemains = 0;
 let holds = [];
 
 let isSpinning = false;
+
+
+/* ========================================
+   履歴
+======================================== */
 
 let winHistory = [];
 
@@ -433,8 +528,12 @@ const elScreen =
 
 function addHold(){
 
-    if(holds.length >= 4)
+    if(holds.length >= 4){
+
         return;
+
+    }
+
 
     const currentRate =
 
@@ -444,10 +543,12 @@ function addHold(){
 
         : RATES.NORMAL;
 
+
     const isWin =
 
         Math.random() <
         (1/currentRate);
+
 
     holds.push({
 
@@ -455,7 +556,9 @@ function addHold(){
 
     });
 
+
     updateHoldUI();
+
 
     if(!isSpinning){
 
@@ -467,7 +570,7 @@ function addHold(){
 
 
 /* ========================================
-   保留
+   保留表示
 ======================================== */
 
 function updateHoldUI(){
@@ -479,8 +582,10 @@ function updateHoldUI(){
                 `hold${i}`
             );
 
+
         ball.className =
             "hold-ball";
+
 
         if(i < holds.length){
 
@@ -524,19 +629,25 @@ function startNextSpin(){
 
     }
 
+
     isSpinning = true;
+
 
     const currentSpinData =
         holds.shift();
 
+
     updateHoldUI();
+
 
     totalSpins++;
 
     spinAtLastWin++;
 
+
     elTotalSpins.textContent =
         totalSpins;
+
 
     if(gameMode !== "NORMAL"){
 
@@ -546,6 +657,7 @@ function startNextSpin(){
             `残り: ${modeRemains}回`;
 
     }
+
 
     runSpinAnimation(
         currentSpinData.isWin
@@ -577,6 +689,7 @@ function runSpinAnimation(isWin){
     elEffect.textContent = "";
 
     elEffect.className = "";
+
 
     const isReach =
 
@@ -627,6 +740,7 @@ function runSpinAnimation(isWin){
 
                 ];
 
+
             targetLeft =
                 pattern[0];
 
@@ -636,8 +750,8 @@ function runSpinAnimation(isWin){
             targetRight =
                 pattern[2];
 
-            /* RUSH確定 */
 
+            // 135はRUSH確定
             isOddWin = true;
 
         }
@@ -645,7 +759,7 @@ function runSpinAnimation(isWin){
 
         else{
 
-            /* ST・時短中はRUSH */
+            /* ST・時短中 */
 
             if(
                 gameMode === "ST" ||
@@ -655,6 +769,9 @@ function runSpinAnimation(isWin){
                 isOddWin = true;
 
             }
+
+
+            /* 通常時 */
 
             else{
 
@@ -689,16 +806,17 @@ function runSpinAnimation(isWin){
                 ];
 
 
-            targetLeft = winNum;
+            targetLeft =
+                winNum;
 
-            targetCenter = winNum;
+            targetCenter =
+                winNum;
 
-            targetRight = winNum;
+            targetRight =
+                winNum;
 
 
-            /* ==========================
-               777なら全回転
-            ========================== */
+            /* 777なら全回転 */
 
             if(winNum === 7){
 
@@ -720,10 +838,8 @@ function runSpinAnimation(isWin){
     else if(isReach){
 
         /*
-          7は除外。
-
-          つまり7テンが発生したのに
-          ハズれることはない。
+            ハズレリーチでは7を選ばない。
+            つまり7テン→ハズレは発生しない。
         */
 
         const LOSE_REACH_NUMBERS = [
@@ -768,6 +884,7 @@ function runSpinAnimation(isWin){
         const pattern =
             getRandomLosePattern();
 
+
         targetLeft =
             pattern[0];
 
@@ -781,7 +898,7 @@ function runSpinAnimation(isWin){
 
 
 /* ========================================
-   777なら専用処理
+   777専用処理
 ======================================== */
 
     if(is7Win){
@@ -794,10 +911,11 @@ function runSpinAnimation(isWin){
 
 
 /* ========================================
-   通常変動
+   通常変動アニメーション
 ======================================== */
 
     let step = 0;
+
 
     const spinTime =
 
@@ -814,15 +932,18 @@ function runSpinAnimation(isWin){
 
             step++;
 
+
             elReel1.textContent =
                 getNextNum(
                     elReel1.textContent
                 );
 
+
             elReel2.textContent =
                 getNextNum(
                     elReel2.textContent
                 );
+
 
             elReel3.textContent =
                 getNextNum(
@@ -832,11 +953,14 @@ function runSpinAnimation(isWin){
 
             if(step >= spinTime){
 
-                clearInterval(interval);
+                clearInterval(
+                    interval
+                );
 
 
                 elReel1.textContent =
                     targetLeft;
+
 
                 elReel3.textContent =
                     targetRight;
@@ -851,11 +975,21 @@ function runSpinAnimation(isWin){
                     let centerStep = 0;
 
 
+                    const centerSpinTime =
+
+                        gameMode === "ST"
+
+                        ? 10
+
+                        : 25;
+
+
                     const centerInterval =
 
                         setInterval(()=>{
 
                             centerStep++;
+
 
                             elReel2.textContent =
 
@@ -866,7 +1000,10 @@ function runSpinAnimation(isWin){
                                 );
 
 
-                            if(centerStep >= 25){
+                            if(
+                                centerStep >=
+                                centerSpinTime
+                            ){
 
                                 clearInterval(
                                     centerInterval
@@ -892,7 +1029,7 @@ function runSpinAnimation(isWin){
                                     );
 
 
-                                    /* 135 */
+                                    /* 135特殊当たり */
 
                                     if(is135Win){
 
@@ -900,8 +1037,10 @@ function runSpinAnimation(isWin){
 
                                             `【${targetLeft}${targetCenter}${targetRight}】特殊大当り！ RUSH確定！`;
 
+
                                         gameMode =
                                             "ST";
+
 
                                         modeRemains =
                                             RATES.ST_TURNS;
@@ -909,7 +1048,7 @@ function runSpinAnimation(isWin){
                                     }
 
 
-                                    /* 奇数 */
+                                    /* 奇数当たり */
 
                                     else if(isOddWin){
 
@@ -917,8 +1056,10 @@ function runSpinAnimation(isWin){
 
                                             `【${targetCenter}揃い】ST「インパクトモード」突入！`;
 
+
                                         gameMode =
                                             "ST";
+
 
                                         modeRemains =
                                             RATES.ST_TURNS;
@@ -926,7 +1067,7 @@ function runSpinAnimation(isWin){
                                     }
 
 
-                                    /* 偶数 */
+                                    /* 偶数当たり */
 
                                     else{
 
@@ -934,8 +1075,10 @@ function runSpinAnimation(isWin){
 
                                             `【${targetCenter}揃い】チャンスタイム突入`;
 
+
                                         gameMode =
                                             "JITITAN";
+
 
                                         modeRemains =
                                             RATES.JITITAN_TURNS;
@@ -943,6 +1086,7 @@ function runSpinAnimation(isWin){
                                     }
 
                                 }
+
 
                                 else{
 
@@ -966,6 +1110,7 @@ function runSpinAnimation(isWin){
                     elReel2.textContent =
                         targetCenter;
 
+
                     finishSpin();
 
                 }
@@ -978,33 +1123,106 @@ function runSpinAnimation(isWin){
 
 
 /* ========================================
-   🌈 全回転演出 🌈
+   DEBUG
+   7図柄強制当たり
+======================================== */
+
+function debug7Win(){
+
+    /*
+        変動中に押すと処理が重なるので
+        変動中は無効
+    */
+
+    if(isSpinning){
+
+        return;
+
+    }
+
+
+    isSpinning = true;
+
+
+    /* 1回転としてカウント */
+
+    totalSpins++;
+
+    spinAtLastWin++;
+
+
+    elTotalSpins.textContent =
+        totalSpins;
+
+
+    /*
+        ST・時短中で使用した場合は
+        その変動分を1回消費
+    */
+
+    if(gameMode !== "NORMAL"){
+
+        modeRemains--;
+
+
+        elStCount.textContent =
+            `残り: ${modeRemains}回`;
+
+    }
+
+
+    /* 強制的に全回転 */
+
+    runFullRotation();
+
+}
+
+
+/* ========================================
+   🌈 777 全回転演出 🌈
 ======================================== */
 
 function runFullRotation(){
 
-    /* まず7テン */
+    /*
+        STEP 1
+        7テンパイ
+    */
 
-    elReel1.textContent = 7;
+    elReel1.textContent =
+        7;
 
-    elReel3.textContent = 7;
+    elReel2.textContent =
+        8;
+
+    elReel3.textContent =
+        7;
+
 
     elEffect.textContent =
         "！！ 7テンパイ ！！";
 
 
+    /*
+        STEP 2
+        暗転
+    */
+
     setTimeout(()=>{
 
-        /* 暗転 */
+        elReel1.textContent =
+            "";
 
-        elReel1.textContent = "";
+        elReel2.textContent =
+            "";
 
-        elReel2.textContent = "";
+        elReel3.textContent =
+            "";
 
-        elReel3.textContent = "";
 
         elEffect.textContent =
             "……";
+
 
         elScreen.style.background =
             "#000";
@@ -1012,25 +1230,36 @@ function runFullRotation(){
     },700);
 
 
-    setTimeout(()=>{
+    /*
+        STEP 3
+        全回転開始
+    */
 
-        /* 全回転開始 */
+    setTimeout(()=>{
 
         elScreen.classList.add(
             "full-rotation"
         );
 
+
         elEffect.className =
             "full-text";
+
 
         elEffect.textContent =
             "🌈 全 回 転 🌈";
 
+
         let index = 0;
+
 
         const fullNumbers = [
 
-            1,3,5,7,9
+            1,
+            3,
+            5,
+            7,
+            9
 
         ];
 
@@ -1042,10 +1271,22 @@ function runFullRotation(){
                 const num =
 
                     fullNumbers[
+
                         index %
                         fullNumbers.length
+
                     ];
 
+
+                /*
+                    111
+                    333
+                    555
+                    777
+                    999
+
+                    のように流れる
+                */
 
                 elReel1.textContent =
                     num;
@@ -1060,7 +1301,9 @@ function runFullRotation(){
                 index++;
 
 
-                /* 数回見せる */
+                /*
+                    12回切り替えたら終了
+                */
 
                 if(index >= 12){
 
@@ -1069,7 +1312,10 @@ function runFullRotation(){
                     );
 
 
-                    /* 最後は777 */
+                    /*
+                        最終停止
+                        777
+                    */
 
                     elReel1.textContent =
                         7;
@@ -1085,13 +1331,19 @@ function runFullRotation(){
                         "🌈 ７７７ 🌈";
 
 
+                    /*
+                        RUSH確定表示
+                    */
+
                     setTimeout(()=>{
 
                         elEffect.textContent =
                             "🎉 RUSH確定！！ 🎉";
 
 
-                        /* 履歴 */
+                        /*
+                            履歴に記録
+                        */
 
                         recordWinHistory(
 
@@ -1106,18 +1358,26 @@ function runFullRotation(){
                         );
 
 
-                        /* RUSH突入 */
+                        /*
+                            STへ
+                        */
 
                         gameMode =
                             "ST";
+
 
                         modeRemains =
                             RATES.ST_TURNS;
 
 
+                        /*
+                            全回転エフェクト解除
+                        */
+
                         elScreen.classList.remove(
                             "full-rotation"
                         );
+
 
                         elEffect.className =
                             "";
@@ -1150,47 +1410,64 @@ function recordWinHistory(
 
     totalWinCount++;
 
-    let typeName = "";
 
-    let cssClass = "";
+    let typeName =
+        "";
+
+
+    let cssClass =
+        "";
+
 
     let displayNum =
         winNum;
 
 
-    /* ST中 */
+    /* ==========================
+       ST中
+    ========================== */
 
     if(gameMode === "ST"){
 
         currentChain++;
 
+
         if(is7Win){
 
             typeName =
+
                 `${currentChain}連目 (全回転)`;
+
 
             cssClass =
                 "tag-special";
 
         }
 
+
         else if(is135Win){
 
             typeName =
+
                 `${currentChain}連目 (135特殊当り)`;
+
 
             cssClass =
                 "tag-special";
+
 
             displayNum =
                 "135";
 
         }
 
+
         else{
 
             typeName =
+
                 `${currentChain}連目 (ST中)`;
+
 
             cssClass =
                 "tag-st";
@@ -1200,39 +1477,51 @@ function recordWinHistory(
     }
 
 
-    /* 時短中 */
+    /* ==========================
+       時短中
+    ========================== */
 
     else if(gameMode === "JITITAN"){
 
         currentChain++;
 
+
         if(is7Win){
 
             typeName =
+
                 `${currentChain}連目 (全回転)`;
+
 
             cssClass =
                 "tag-special";
 
         }
 
+
         else if(is135Win){
 
             typeName =
+
                 `${currentChain}連目 (135特殊当り)`;
+
 
             cssClass =
                 "tag-special";
+
 
             displayNum =
                 "135";
 
         }
 
+
         else{
 
             typeName =
+
                 `${currentChain}連目 (引き戻し)`;
+
 
             cssClass =
                 "tag-st";
@@ -1242,11 +1531,14 @@ function recordWinHistory(
     }
 
 
-    /* 通常時 */
+    /* ==========================
+       通常時
+    ========================== */
 
     else{
 
-        currentChain = 1;
+        currentChain =
+            1;
 
 
         if(is7Win){
@@ -1254,38 +1546,46 @@ function recordWinHistory(
             typeName =
                 "初当り (全回転・RUSH確定)";
 
+
             cssClass =
                 "tag-special";
 
         }
+
 
         else if(is135Win){
 
             typeName =
                 "初当り (135・RUSH確定)";
 
+
             cssClass =
                 "tag-special";
+
 
             displayNum =
                 "135";
 
         }
 
+
         else if(isOddWin){
 
             typeName =
                 "初当り (RUSH突入)";
+
 
             cssClass =
                 "tag-st";
 
         }
 
+
         else{
 
             typeName =
                 "初当り (時短突入)";
+
 
             cssClass =
                 "tag-jititan";
@@ -1295,6 +1595,8 @@ function recordWinHistory(
     }
 
 
+    /* 最高連 */
+
     if(currentChain > maxChain){
 
         maxChain =
@@ -1302,6 +1604,8 @@ function recordWinHistory(
 
     }
 
+
+    /* 履歴追加 */
 
     winHistory.unshift({
 
@@ -1320,7 +1624,8 @@ function recordWinHistory(
     });
 
 
-    spinAtLastWin = 0;
+    spinAtLastWin =
+        0;
 
 
     updateHistoryUI();
@@ -1337,8 +1642,10 @@ function updateHistoryUI(){
     elTotalWins.textContent =
         totalWinCount;
 
+
     elMaxChain.textContent =
         maxChain;
+
 
     elHistoryList.innerHTML =
         "";
@@ -1349,6 +1656,7 @@ function updateHistoryUI(){
         .forEach(item=>{
 
             const li =
+
                 document.createElement(
                     "li"
                 );
@@ -1391,6 +1699,10 @@ function updateHistoryUI(){
 
 function finishSpin(){
 
+    /*
+        ST・時短終了判定
+    */
+
     if(
         gameMode !== "NORMAL" &&
         modeRemains <= 0
@@ -1408,8 +1720,10 @@ function finishSpin(){
         gameMode =
             "NORMAL";
 
+
         modeRemains =
             0;
+
 
         currentChain =
             0;
@@ -1417,19 +1731,29 @@ function finishSpin(){
     }
 
 
+    /*
+        ST表示
+    */
+
     if(gameMode === "ST"){
 
         elMode.textContent =
             "インパクトモード (ST)";
 
+
         elMode.className =
             "mode-st";
+
 
         elStCount.textContent =
             `ST残り: ${modeRemains}回`;
 
     }
 
+
+    /*
+        時短表示
+    */
 
     else if(
         gameMode === "JITITAN"
@@ -1438,8 +1762,10 @@ function finishSpin(){
         elMode.textContent =
             "チャンスタイム (時短)";
 
+
         elMode.className =
             "mode-jititan";
+
 
         elStCount.textContent =
             `時短残り: ${modeRemains}回`;
@@ -1447,19 +1773,29 @@ function finishSpin(){
     }
 
 
+    /*
+        通常表示
+    */
+
     else{
 
         elMode.textContent =
             "通常モード";
 
+
         elMode.className =
             "mode-normal";
+
 
         elStCount.textContent =
             "";
 
     }
 
+
+    /*
+        次の保留へ
+    */
 
     setTimeout(()=>{
 
