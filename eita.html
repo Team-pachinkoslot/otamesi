@@ -187,12 +187,12 @@
 <script>
     // 音声ファイルの指定
     const seReachNormal = new Audio('');
-    const seReachPremium = new Audio('./sound_01.mp3'); // ST中リーチの10%で鳴る確定音
+    const seReachPremium = new Audio('./sound_01.mp3'); // ST中大当りリーチの50%で鳴る音
     const seJititanPremium = new Audio('./sound_01.mp3'); // 時短中大当りリーチの特定割合で鳴る音
 
     // パラメータ設定
     const RATES = {
-        NORMAL: 15,      
+        NORMAL: 10,      
         ST: 10,           
         ODD_WIN_RATE: 0.59, 
         ST_TURNS: 163,      
@@ -357,26 +357,33 @@
                 if (isReach) {
                     let isSpecialReachSound = false;
 
-                    // 1. ST(ラッシュ)中のリーチ発生時、10%の確率で特殊音
-                    if (gameMode === "ST" && Math.random() < 1.00) {
-                        isSpecialReachSound = true;
-                        seReachPremium.currentTime = 0;
-                        seReachPremium.play().catch(e => console.log(e));
-                        elEffect.textContent = "🌈 STプレミアムリーチ音！！ 🌈";
-                    
-                    // 2. 時短中の「大当り」時、20%の確率で引き戻し告知音（0.20を自由に変更可）
-                    } else if (gameMode === "JITITAN" && isWin && Math.random() < 0.20) {
-                        isSpecialReachSound = true;
-                        seJititanPremium.currentTime = 0;
-                        seJititanPremium.play().catch(e => console.log(e));
-                        elEffect.textContent = "🌈 時短中引き戻し確定音！！ 🌈";
-                    
-                    // 通常のリーチ音
-                    } else {
-                        seReachNormal.currentTime = 0;
-                        seReachNormal.play().catch(e => console.log(e));
-                        elEffect.textContent = "🔥 リーチ！！ 🔥";
-                    }
+// 1. 通常時の「大当り」時、10%の確率でプレミア音
+if (gameMode === "NORMAL" && isWin && Math.random() < 1.00) {
+    isSpecialReachSound = true;
+    seReachPremium.currentTime = 0;
+    seReachPremium.play().catch(e => console.log(e));
+    elEffect.textContent = "🌈 通常時プレミア確定音！！ 🌈";
+
+// 2. ST(ラッシュ)中の「大当り」時、50%の確率で特殊音
+} else if (gameMode === "ST" && isWin && Math.random() < 1.00) {
+    isSpecialReachSound = true;
+    seReachPremium.currentTime = 0;
+    seReachPremium.play().catch(e => console.log(e));
+    elEffect.textContent = "🌈 ST確定リーチ音発生！！ 🌈";
+
+// 3. 時短中の「大当り」時、20%の確率で引き戻し告知音
+} else if (gameMode === "JITITAN" && isWin && Math.random() < 1.00) {
+    isSpecialReachSound = true;
+    seJititanPremium.currentTime = 0;
+    seJititanPremium.play().catch(e => console.log(e));
+    elEffect.textContent = "🌈 時短中引き戻し確定音！！ 🌈";
+
+// 4. 通常のリーチ音（上記以外）
+} else {
+    seReachNormal.currentTime = 0;
+    seReachNormal.play().catch(e => console.log(e));
+    elEffect.textContent = "🔥 リーチ！！ 🔥";
+}
 
                     let centerStep = 0;
                     const centerSpinTime = (gameMode === "ST") ? 10 : 25;
