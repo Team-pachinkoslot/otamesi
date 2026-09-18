@@ -382,12 +382,13 @@ button:active {
 
 /* ========================================
    効果音
-   sounds/ フォルダに以下3ファイルを配置
+   HTMLと同じ階層にある sound_01.mp3 を使用
 ======================================== */
 
-const seReachNormal = new Audio('sounds/reach.mp3');
-const seReachPremium = new Audio('sounds/reach_premium.mp3');
-const seJititanPremium = new Audio('sounds/jititan_premium.mp3');
+const SOUND_PATH = './sound_01.mp3';
+const seReachNormal = new Audio(SOUND_PATH);
+const seReachPremium = new Audio(SOUND_PATH);
+const seJititanPremium = new Audio(SOUND_PATH);
 
 function playSound(audio){
     try{
