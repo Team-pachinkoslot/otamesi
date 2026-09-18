@@ -1178,134 +1178,102 @@ function debug7Win(){
 }
 
 
+
 /* ========================================
    🌈 777 全回転演出 🌈
+   通常変動と同じ回転を長時間行う
 ======================================== */
 
 function runFullRotation(){
 
     /*
         STEP 1
-        7テンパイ
+        まず7テンパイを表示
     */
 
-    elReel1.textContent =
-        7;
-
-    elReel2.textContent =
-        8;
-
-    elReel3.textContent =
-        7;
-
+    elReel1.textContent = 7;
+    elReel2.textContent = 8;
+    elReel3.textContent = 7;
 
     elEffect.textContent =
-        "！！ 7テンパイ ！！";
+        "🔥 7テンパイ！！ 🔥";
 
 
     /*
-        STEP 2
-        暗転
-    */
-
-    setTimeout(()=>{
-
-        elReel1.textContent =
-            "";
-
-        elReel2.textContent =
-            "";
-
-        elReel3.textContent =
-            "";
-
-
-        elEffect.textContent =
-            "……";
-
-
-        elScreen.style.background =
-            "#000";
-
-    },700);
-
-
-    /*
-        STEP 3
+        少し7テンを見せてから
         全回転開始
     */
 
     setTimeout(()=>{
+
+        elEffect.textContent =
+            "🌈 全 回 転 🌈";
+
+        elEffect.className =
+            "full-text";
 
         elScreen.classList.add(
             "full-rotation"
         );
 
 
-        elEffect.className =
-            "full-text";
+        /*
+            通常変動と同じように
+            1→2→3→...→9→1
+            と回転させる
+        */
+
+        let step = 0;
 
 
-        elEffect.textContent =
-            "🌈 全 回 転 🌈";
+        /*
+            全回転の長さ
 
+            120 × 50ms
+            = 約6秒
 
-        let index = 0;
+            長くしたければ
+            120を増やす
+        */
 
-
-        const fullNumbers = [
-
-            1,
-            3,
-            5,
-            7,
-            9
-
-        ];
+        const FULL_ROTATION_STEPS = 120;
 
 
         const fullInterval =
-
             setInterval(()=>{
 
-                const num =
-
-                    fullNumbers[
-
-                        index %
-                        fullNumbers.length
-
-                    ];
+                step++;
 
 
                 /*
-                    111
-                    333
-                    555
-                    777
-                    999
-
-                    のように流れる
+                    3つの数字を
+                    通常変動と同じ方法で回す
                 */
 
                 elReel1.textContent =
-                    num;
+                    getNextNum(
+                        elReel1.textContent
+                    );
 
                 elReel2.textContent =
-                    num;
+                    getNextNum(
+                        elReel2.textContent
+                    );
 
                 elReel3.textContent =
-                    num;
-
-
-                index++;
+                    getNextNum(
+                        elReel3.textContent
+                    );
 
 
                 /*
-                    12回切り替えたら終了
+                    規定時間まで回転
                 */
 
-                if(index >= 12){
+                if(
+                    step >=
+                    FULL_ROTATION_STEPS
+                ){
 
                     clearInterval(
                         fullInterval
@@ -1313,8 +1281,7 @@ function runFullRotation(){
 
 
                     /*
-                        最終停止
-                        777
+                        最後は777で停止
                     */
 
                     elReel1.textContent =
@@ -1332,7 +1299,7 @@ function runFullRotation(){
 
 
                     /*
-                        RUSH確定表示
+                        777を少し見せる
                     */
 
                     setTimeout(()=>{
@@ -1342,42 +1309,37 @@ function runFullRotation(){
 
 
                         /*
-                            履歴に記録
+                            大当り履歴
                         */
 
                         recordWinHistory(
 
                             true,
-
                             7,
-
                             false,
-
                             true
 
                         );
 
 
                         /*
-                            STへ
+                            ST突入
                         */
 
                         gameMode =
                             "ST";
-
 
                         modeRemains =
                             RATES.ST_TURNS;
 
 
                         /*
-                            全回転エフェクト解除
+                            全回転用エフェクト解除
                         */
 
                         elScreen.classList.remove(
                             "full-rotation"
                         );
-
 
                         elEffect.className =
                             "";
@@ -1386,13 +1348,13 @@ function runFullRotation(){
                         finishSpin();
 
 
-                    },1000);
+                    },1200);
 
                 }
 
-            },350);
+            },50);
 
-    },1400);
+    },1000);
 
 }
 
