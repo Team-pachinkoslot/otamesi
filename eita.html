@@ -79,22 +79,33 @@
 
         #controls {
             margin-top: 15px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
         }
         button {
-            padding: 12px 24px;
-            font-size: 18px;
+            padding: 12px 18px;
+            font-size: 16px;
             background: linear-gradient(135deg, #8a2be2, #4b0082);
             color: white;
             border: none;
             border-radius: 5px;
             cursor: pointer;
             box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            font-weight: bold;
         }
         button:active {
             transform: translateY(2px);
         }
+        #auto-btn {
+            background: linear-gradient(135deg, #444, #222);
+            border: 1px solid #666;
+        }
+        #auto-btn.auto-on {
+            background: linear-gradient(135deg, #ff0055, #990033);
+            box-shadow: 0 0 10px rgba(255, 0, 85, 0.6);
+        }
 
-        /* 履歴表示エリアのスタイル */
         #history-box {
             margin-top: 15px;
             background-color: #1a1a1a;
@@ -158,10 +169,10 @@
     </div>
 
     <div id="controls">
-        <button id="shoot-btn" onclick="addHold()">玉を打つ (ヘソ入賞)</button>
+        <button id="shoot-btn" onclick="addHold()">玉を打つ</button>
+        <button id="auto-btn" onclick="toggleAutoPlay()">オート: OFF</button>
     </div>
 
-    <!-- 大当り履歴エリア -->
     <div id="history-box">
         <div id="history-title">
             <span>大当り履歴</span>
@@ -174,41 +185,43 @@
 </div>
 
 <script>
+    // 音声ファイルの指定
+    const seReachNormal = new Audio('');
+    const seReachPremium = new Audio('Team-pachinkoslot/otamesi/sound_01.mp3'); // ST中リーチの10%で鳴る確定音
+
     // パラメータ設定
     const RATES = {
-        NORMAL: 319.7,      // 通常時・時短中の確率
-        ST: 99.4,           // ST中の確率
-        ODD_WIN_RATE: 0.59, // 通常時の奇数（直行RUSH）割合 59%
-        ST_TURNS: 163,      // ST回転数
-        JITITAN_TURNS: 100  // 時短回転数
+        NORMAL: 319.7,      
+        ST: 99.4,           
+        ODD_WIN_RATE: 0.59, 
+        ST_TURNS: 163,      
+        JITITAN_TURNS: 100  
     };
 
-    // 図柄の定義
     const ODD_NUMBERS = [1, 3, 5, 7, 9];
     const EVEN_NUMBERS = [2, 4, 6, 8];
     const ALL_NUMBERS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
-    // 固定ハズレ目
     const FIXED_LOSE_PATTERNS = [
         [1, 2, 3], [2, 4, 6], [3, 5, 7], 
         [4, 1, 5], [5, 8, 2], [6, 3, 9], [8, 2, 4]
     ];
 
-    // ゲーム状態
     let totalSpins = 0;
-    let spinAtLastWin = 0;   // 前回の当りからの回転数
-    let gameMode = "NORMAL"; // NORMAL, ST, JITITAN
+    let spinAtLastWin = 0;
+    let gameMode = "NORMAL"; 
     let modeRemains = 0;
     let holds = [];
     let isSpinning = false;
 
-    // 履歴データ管理
+    let isAutoPlay = false;
+    let autoPlayInterval = null;
+
     let winHistory = [];
     let currentChain = 0;
     let maxChain = 0;
     let totalWinCount = 0;
 
-    // DOM要素
     const elReel1 = document.getElementById('reel1');
     const elReel2 = document.getElementById('reel2');
     const elReel3 = document.getElementById('reel3');
@@ -219,8 +232,8 @@
     const elHistoryList = document.getElementById('history-list');
     const elTotalWins = document.getElementById('total-wins');
     const elMaxChain = document.getElementById('max-chain');
+    const elAutoBtn = document.getElementById('auto-btn');
 
-    // 玉を打つ（ヘソ入賞）
     function addHold() {
         if (holds.length >= 4) return;
 
@@ -235,7 +248,24 @@
         }
     }
 
-    // 保留表示の更新
+    function toggleAutoPlay() {
+        isAutoPlay = !isAutoPlay;
+
+        if (isAutoPlay) {
+            elAutoBtn.textContent = "オート: ON";
+            elAutoBtn.classList.add('auto-on');
+            autoPlayInterval = setInterval(() => {
+                if (holds.length < 4) {
+                    addHold();
+                }
+            }, 300);
+        } else {
+            elAutoBtn.textContent = "オート: OFF";
+            elAutoBtn.classList.remove('auto-on');
+            clearInterval(autoPlayInterval);
+        }
+    }
+
     function updateHoldUI() {
         for (let i = 0; i < 4; i++) {
             const ball = document.getElementById(`hold${i}`);
@@ -250,7 +280,6 @@
         }
     }
 
-    // 変動開始
     function startNextSpin() {
         if (holds.length === 0) {
             isSpinning = false;
@@ -278,7 +307,6 @@
         return (val % 9) + 1;
     }
 
-    // スピン＆確定演出処理
     function runSpinAnimation(isWin) {
         elEffect.textContent = "";
         const isReach = isWin || (Math.random() < 0.15);
@@ -288,7 +316,7 @@
 
         if (isWin) {
             if (gameMode === "ST" || gameMode === "JITITAN") {
-                isOddWin = true; // 引き戻し/ST中は奇数固定
+                isOddWin = true;
             } else {
                 isOddWin = Math.random() < RATES.ODD_WIN_RATE;
             }
@@ -326,7 +354,22 @@
                 elReel3.textContent = targetRight;
 
                 if (isReach) {
-                    elEffect.textContent = "🔥 リーチ！！ 🔥";
+                    // ★ ST(ラッシュ)中のリーチ発生時、10%の確率で特殊リーチ音を鳴らす
+                    let isSpecialReachSound = false;
+                    if (gameMode === "ST" && Math.random() < 1) {
+                        isSpecialReachSound = true;
+                    }
+
+                    if (isSpecialReachSound) {
+                        seReachPremium.currentTime = 0;
+                        seReachPremium.play().catch(e => console.log(e));
+                        elEffect.textContent = "🌈 プレミアムリーチ発生音！！ 🌈";
+                    } else {
+                        seReachNormal.currentTime = 0;
+                        seReachNormal.play().catch(e => console.log(e));
+                        elEffect.textContent = "🔥 リーチ！！ 🔥";
+                    }
+
                     let centerStep = 0;
                     const centerSpinTime = (gameMode === "ST") ? 10 : 25;
 
@@ -340,6 +383,7 @@
                             
                             if (isWin) {
                                 recordWinHistory(isOddWin, targetCenter);
+
                                 if (isOddWin) {
                                     elEffect.textContent = `【${targetCenter}揃い】ST「インパクトモード」突入！`;
                                     gameMode = "ST";
@@ -365,7 +409,6 @@
         }, 50);
     }
 
-    // 大当り履歴の記録処理
     function recordWinHistory(isOddWin, winNum) {
         totalWinCount++;
         
@@ -381,7 +424,7 @@
             typeName = `${currentChain}連目 (引き戻し)`;
             cssClass = "tag-st";
         } else {
-            currentChain = 1; // 初当り
+            currentChain = 1;
             if (isOddWin) {
                 typeName = "初当り (RUSH突入)";
                 cssClass = "tag-st";
@@ -395,7 +438,6 @@
             maxChain = currentChain;
         }
 
-        // 履歴オブジェクトを追加
         winHistory.unshift({
             count: totalWinCount,
             spins: spinAtLastWin,
@@ -404,11 +446,10 @@
             css: cssClass
         });
 
-        spinAtLastWin = 0; // 当選回転数をリセット
+        spinAtLastWin = 0;
         updateHistoryUI();
     }
 
-    // 履歴画面の更新
     function updateHistoryUI() {
         elTotalWins.textContent = totalWinCount;
         elMaxChain.textContent = maxChain;
@@ -424,13 +465,12 @@
         });
     }
 
-    // 変動終了処理
     function finishSpin() {
         if (gameMode !== "NORMAL" && modeRemains <= 0) {
             elEffect.textContent = `${gameMode === "ST" ? "ST" : "時短"}終了...`;
             gameMode = "NORMAL";
             modeRemains = 0;
-            currentChain = 0; // 連チャン数をリセット
+            currentChain = 0;
         }
 
         if (gameMode === "ST") {
