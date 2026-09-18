@@ -126,36 +126,33 @@
     </div>
 </div>
 
-<div id="version-display">Ver. 1.6</div>
+<div id="version-display">Ver. 1.7</div>
 
 <script>
-// パラメータ設定
+    // パラメータ設定
     const RATES = {
-        NORMAL: 319.7,     // 通常時の大当り確率
-        ST: 99.4,          // ST中の大当り確率
-        ST_RUSH_RATE: 0.70, // ST突入率
-        ST_TURNS: 163
+        NORMAL: 20,      // 通常時・時短中の確率
+        ST: 99.4,           // ST中の確率
+        ODD_WIN_RATE: 0.59, // 通常時の奇数（直行RUSH）割合 59%
+        ST_TURNS: 163,      // ST回転数
+        JITITAN_TURNS: 100  // 時短回転数
     };
 
-    // ==========================================
-    // 固定出目の定義（停止目標）
-    // ==========================================
-    const FIXED_LOSE_PATTERNS = [
-        [1, 2, 3],
-        [2, 4, 6],
-        [3, 5, 7],
-        [4, 1, 5],
-        [5, 8, 2],
-        [6, 3, 9],
-        [8, 2, 4]
-    ];
+    // 図柄の定義
+    const ODD_NUMBERS = [1, 3, 5, 7, 9]; // 奇数（RUSH突入）
+    const EVEN_NUMBERS = [2, 4, 6, 8];   // 偶数（時短100回）
+    const ALL_NUMBERS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
-    const REACH_NUMBERS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+    // 固定ハズレ目
+    const FIXED_LOSE_PATTERNS = [
+        [1, 2, 3], [2, 4, 6], [3, 5, 7], 
+        [4, 1, 5], [5, 8, 2], [6, 3, 9], [8, 2, 4]
+    ];
 
     // ゲーム状態
     let totalSpins = 0;
-    let isST = false;
-    let stRemains = 0;
+    let gameMode = "NORMAL"; // NORMAL, ST, JITITAN
+    let modeRemains = 0;     // 残り回転数
     let holds = [];
     let isSpinning = false;
 
@@ -172,7 +169,8 @@
     function addHold() {
         if (holds.length >= 4) return;
 
-        const currentRate = isST ? RATES.ST : RATES.NORMAL;
+        // モードによる確率選択（ST中のみ高確率、時短中は通常確率）
+        const currentRate = (gameMode === "ST") ? RATES.ST : RATES.NORMAL;
         const isWin = Math.random() < (1 / currentRate);
         
         holds.push({ isWin: isWin });
@@ -191,8 +189,6 @@
             if (i < holds.length) {
                 if (holds[i].isWin && Math.random() < 0.8) {
                     ball.classList.add('hold-red');
-                } else if (Math.random() < 0.05) {
-                    ball.classList.add('hold-blue');
                 } else {
                     ball.classList.add('hold-blue');
                 }
@@ -214,41 +210,48 @@
         totalSpins++;
         elTotalSpins.textContent = totalSpins;
 
-        if (isST) {
-            stRemains--;
-            elStCount.textContent = `ST残り: ${stRemains}回`;
+        // モード回転数の消費
+        if (gameMode !== "NORMAL") {
+            modeRemains--;
+            elStCount.textContent = `残り: ${modeRemains}回`;
         }
 
         runSpinAnimation(currentSpinData.isWin);
     }
 
-    // 次の数字を順繰りに取得（1→2→...→9→1）
+    // 次の数字を取得（1→2...→9→1）
     function getNextNum(current) {
         let val = parseInt(current) || 1;
         return (val % 9) + 1;
     }
 
-    // スピン＆固定出目停止アニメーション
+    // スピン＆確定演出処理
     function runSpinAnimation(isWin) {
         elEffect.textContent = "";
 
-        // リーチ判定
         const isReach = isWin || (Math.random() < 0.15);
 
-        // 1stフェーズ：左・右リールが順番に動く時間
-        let step = 0;
-        const spinTimeLeftRight = isST ? 8 : 15; // 順繰り変化させるコマ数
-
-        // 停止目標の出目を決定
         let targetLeft, targetCenter, targetRight;
+        let isOddWin = false;
 
         if (isWin) {
-            const winNum = (Math.random() < RATES.ST_RUSH_RATE || isST) ? 7 : 3;
+            // 当たり時の図柄分岐
+            if (gameMode === "ST" || gameMode === "JITITAN") {
+                // ST中・時短中の引き戻しは大当りでRUSH（奇数図柄）確定
+                isOddWin = true;
+            } else {
+                // 通常時は 59% で奇数図柄（RUSH直行）
+                isOddWin = Math.random() < RATES.ODD_WIN_RATE;
+            }
+
+            const winArray = isOddWin ? ODD_NUMBERS : EVEN_NUMBERS;
+            const winNum = winArray[Math.floor(Math.random() * winArray.length)];
+            
             targetLeft = winNum;
-            targetRight = winNum;
             targetCenter = winNum;
+            targetRight = winNum;
         } else if (isReach) {
-            const reachNum = REACH_NUMBERS[Math.floor(Math.random() * REACH_NUMBERS.length)];
+            const reachNum = ALL_NUMBERS[Math.floor(Math.random() * ALL_NUMBERS.length)];
             targetLeft = reachNum;
             targetRight = reachNum;
             targetCenter = (reachNum % 9) + 1; // 1つズレ
@@ -259,16 +262,17 @@
             targetRight = pattern[2];
         }
 
-        // --- フェーズ1: 全体スクロール（1→2→3...と変化） ---
+        // --- フェーズ1: 順繰り回転 ---
+        let step = 0;
+        const spinTimeLeftRight = (gameMode === "ST") ? 8 : 15;
+
         const interval = setInterval(() => {
             step++;
 
-            // 全てのリールを順繰りに変化させる
             elReel1.textContent = getNextNum(elReel1.textContent);
             elReel2.textContent = getNextNum(elReel2.textContent);
             elReel3.textContent = getNextNum(elReel3.textContent);
 
-            // 規定ステップに達したらテンパイ（またはハズレ目）位置にビタッと止める
             if (step >= spinTimeLeftRight) {
                 clearInterval(interval);
 
@@ -277,12 +281,11 @@
                 elReel3.textContent = targetRight;
 
                 if (isReach) {
-                    // リーチ成立
                     elEffect.textContent = "🔥 リーチ！！ 🔥";
 
-                    // --- フェーズ2: リーチ中（中リールだけが順繰り動き続ける） ---
+                    // --- フェーズ2: 中リール低速回転 ---
                     let centerStep = 0;
-                    const centerSpinTime = isST ? 10 : 25;
+                    const centerSpinTime = (gameMode === "ST") ? 10 : 25;
 
                     const centerInterval = setInterval(() => {
                         centerStep++;
@@ -291,18 +294,18 @@
                         if (centerStep >= centerSpinTime) {
                             clearInterval(centerInterval);
                             
-                            // 中リールを目標の出目でビタ止め
+                            // 中リール固定
                             elReel2.textContent = targetCenter;
                             
                             if (isWin) {
-                                if (targetLeft === 7) {
-                                    elEffect.textContent = "【超大当り】ST「インパクトモード」突入！";
-                                    isST = true;
-                                    stRemains = RATES.ST_TURNS;
+                                if (isOddWin) {
+                                    elEffect.textContent = `【${targetCenter}揃い】ST「インパクトモード」突入！`;
+                                    gameMode = "ST";
+                                    modeRemains = RATES.ST_TURNS;
                                 } else {
-                                    elEffect.textContent = "【大当り】通常大当り";
-                                    isST = false;
-                                    stRemains = 0;
+                                    elEffect.textContent = `【${targetCenter}揃い】「チャンスタイム(時短100回)」突入`;
+                                    gameMode = "JITITAN";
+                                    modeRemains = RATES.JITITAN_TURNS;
                                 }
                             } else {
                                 elEffect.textContent = "ハズレ...";
@@ -313,7 +316,7 @@
                     }, 60);
 
                 } else {
-                    // 通常ハズレ（中リールも目標の出目で固定）
+                    // 通常ハズレ
                     elReel2.textContent = targetCenter;
                     finishSpin();
                 }
@@ -321,17 +324,24 @@
         }, 50);
     }
 
-    // 変動終了処理
+    // 変動終了処理（モード管理）
     function finishSpin() {
-        if (isST && stRemains <= 0) {
-            isST = false;
-            elEffect.textContent = "ST終了...";
+        // ST・時短の終了判定
+        if (gameMode !== "NORMAL" && modeRemains <= 0) {
+            elEffect.textContent = `${gameMode === "ST" ? "ST" : "時短"}終了...`;
+            gameMode = "NORMAL";
+            modeRemains = 0;
         }
 
-        if (isST) {
+        // モード表示の更新
+        if (gameMode === "ST") {
             elMode.textContent = "インパクトモード (ST)";
             elMode.className = "mode-st";
-            elStCount.textContent = `ST残り: ${stRemains}回`;
+            elStCount.textContent = `ST残り: ${modeRemains}回`;
+        } else if (gameMode === "JITITAN") {
+            elMode.textContent = "チャンスタイム (時短)";
+            elMode.className = "mode-jititan";
+            elStCount.textContent = `時短残り: ${modeRemains}回`;
         } else {
             elMode.textContent = "通常モード";
             elMode.className = "mode-normal";
