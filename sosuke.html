@@ -1,1 +1,357 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>えいた専用 SIM</title>
+    <style>
+        body {
+            background-color: #111;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+        }
+        #game-container {
+            width: 400px;
+            margin: 0 auto;
+            background-color: #222;
+            border: 4px solid #555;
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 0 20px rgba(128, 0, 128, 0.5);
+        }
+        #status-bar {
+            display: flex;
+            justify-content: space-between;
+            background: #333;
+            padding: 8px;
+            margin-bottom: 10px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        .mode-normal { color: #00ffff; }
+        .mode-st { color: #ff00ff; animation: blink 0.5s infinite alternate; }
+        .mode-jititan { color: #00ff66; }
+        @keyframes blink { from { opacity: 1; } to { opacity: 0.6; } }
 
+        #screen {
+            background: #000;
+            border: 2px solid #888;
+            height: 250px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+        #reels {
+            display: flex;
+            gap: 15px;
+            font-size: 64px;
+            font-weight: bold;
+            text-shadow: 0 0 10px #fff;
+        }
+        #effect-text {
+            font-size: 20px;
+            color: #ffcc00;
+            height: 30px;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+        #hold-container {
+            margin: 15px 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+        .hold-ball {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #444;
+            border: 1px solid #888;
+        }
+        .hold-blue { background: #0088ff; box-shadow: 0 0 5px #0088ff; }
+        .hold-red { background: #ff0000; box-shadow: 0 0 8px #ff0000; }
+        .hold-gold { background: #ffd700; box-shadow: 0 0 10px #ffd700; }
+
+        #controls {
+            margin-top: 15px;
+        }
+        button {
+            padding: 12px 24px;
+            font-size: 18px;
+            background: linear-gradient(135deg, #8a2be2, #4b0082);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+        button:active {
+            transform: translateY(2px);
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <div id="status-bar">
+        <span id="mode-display" class="mode-normal">通常モード</span>
+        <span id="st-count"></span>
+        <span>回転数: <span id="total-spins">0</span></span>
+    </div>
+
+    <div id="screen">
+        <div id="reels">
+            <span id="reel1">1</span>
+            <span id="reel2">2</span>
+            <span id="reel3">3</span>
+        </div>
+        <div id="effect-text"></div>
+    </div>
+
+    <div id="hold-container">
+        <span>保留:</span>
+        <div class="hold-ball" id="hold0"></div>
+        <div class="hold-ball" id="hold1"></div>
+        <div class="hold-ball" id="hold2"></div>
+        <div class="hold-ball" id="hold3"></div>
+    </div>
+
+    <div id="controls">
+        <button id="shoot-btn" onclick="addHold()">玉を打つ (ヘソ入賞)</button>
+    </div>
+</div>
+
+<script>
+    // パラメータ設定
+    const RATES = {
+        NORMAL: 20,      // 通常時・時短中の確率
+        ST: 99.4,           // ST中の確率
+        ODD_WIN_RATE: 0.59, // 通常時の奇数（直行RUSH）割合 59%
+        ST_TURNS: 163,      // ST回転数
+        JITITAN_TURNS: 100  // 時短回転数
+    };
+
+    // 図柄の定義
+    const ODD_NUMBERS = [1, 3, 5, 7, 9]; // 奇数（RUSH突入）
+    const EVEN_NUMBERS = [2, 4, 6, 8];   // 偶数（時短100回）
+    const ALL_NUMBERS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+
+    // 固定ハズレ目
+    const FIXED_LOSE_PATTERNS = [
+        [1, 2, 3], [2, 4, 6], [3, 5, 7], 
+        [4, 1, 5], [5, 8, 2], [6, 3, 9], [8, 2, 4]
+    ];
+
+    // ゲーム状態
+    let totalSpins = 0;
+    let gameMode = "NORMAL"; // NORMAL, ST, JITITAN
+    let modeRemains = 0;     // 残り回転数
+    let holds = [];
+    let isSpinning = false;
+
+    // DOM要素
+    const elReel1 = document.getElementById('reel1');
+    const elReel2 = document.getElementById('reel2');
+    const elReel3 = document.getElementById('reel3');
+    const elEffect = document.getElementById('effect-text');
+    const elMode = document.getElementById('mode-display');
+    const elStCount = document.getElementById('st-count');
+    const elTotalSpins = document.getElementById('total-spins');
+
+    // 玉を打つ（ヘソ入賞）
+    function addHold() {
+        if (holds.length >= 4) return;
+
+        // モードによる確率選択（ST中のみ高確率、時短中は通常確率）
+        const currentRate = (gameMode === "ST") ? RATES.ST : RATES.NORMAL;
+        const isWin = Math.random() < (1 / currentRate);
+        
+        holds.push({ isWin: isWin });
+        updateHoldUI();
+
+        if (!isSpinning) {
+            startNextSpin();
+        }
+    }
+
+    // 保留表示の更新
+    function updateHoldUI() {
+        for (let i = 0; i < 4; i++) {
+            const ball = document.getElementById(`hold${i}`);
+            ball.className = 'hold-ball';
+            if (i < holds.length) {
+                if (holds[i].isWin && Math.random() < 0.8) {
+                    ball.classList.add('hold-red');
+                } else {
+                    ball.classList.add('hold-blue');
+                }
+            }
+        }
+    }
+
+    // 変動開始
+    function startNextSpin() {
+        if (holds.length === 0) {
+            isSpinning = false;
+            return;
+        }
+
+        isSpinning = true;
+        const currentSpinData = holds.shift();
+        updateHoldUI();
+
+        totalSpins++;
+        elTotalSpins.textContent = totalSpins;
+
+        // モード回転数の消費
+        if (gameMode !== "NORMAL") {
+            modeRemains--;
+            elStCount.textContent = `残り: ${modeRemains}回`;
+        }
+
+        runSpinAnimation(currentSpinData.isWin);
+    }
+
+    // 次の数字を取得（1→2...→9→1）
+    function getNextNum(current) {
+        let val = parseInt(current) || 1;
+        return (val % 9) + 1;
+    }
+
+    // スピン＆確定演出処理
+    function runSpinAnimation(isWin) {
+        elEffect.textContent = "";
+
+        const isReach = isWin || (Math.random() < 0.15);
+
+        let targetLeft, targetCenter, targetRight;
+        let isOddWin = false;
+
+        if (isWin) {
+            // 当たり時の図柄分岐
+            if (gameMode === "ST" || gameMode === "JITITAN") {
+                // ST中・時短中の引き戻しは大当りでRUSH（奇数図柄）確定
+                isOddWin = true;
+            } else {
+                // 通常時は 59% で奇数図柄（RUSH直行）
+                isOddWin = Math.random() < RATES.ODD_WIN_RATE;
+            }
+
+            const winArray = isOddWin ? ODD_NUMBERS : EVEN_NUMBERS;
+            const winNum = winArray[Math.floor(Math.random() * winArray.length)];
+            
+            targetLeft = winNum;
+            targetCenter = winNum;
+            targetRight = winNum;
+        } else if (isReach) {
+            const reachNum = ALL_NUMBERS[Math.floor(Math.random() * ALL_NUMBERS.length)];
+            targetLeft = reachNum;
+            targetRight = reachNum;
+            targetCenter = (reachNum % 9) + 1; // 1つズレ
+        } else {
+            const pattern = FIXED_LOSE_PATTERNS[Math.floor(Math.random() * FIXED_LOSE_PATTERNS.length)];
+            targetLeft = pattern[0];
+            targetCenter = pattern[1];
+            targetRight = pattern[2];
+        }
+
+        // --- フェーズ1: 順繰り回転 ---
+        let step = 0;
+        const spinTimeLeftRight = (gameMode === "ST") ? 8 : 15;
+
+        const interval = setInterval(() => {
+            step++;
+
+            elReel1.textContent = getNextNum(elReel1.textContent);
+            elReel2.textContent = getNextNum(elReel2.textContent);
+            elReel3.textContent = getNextNum(elReel3.textContent);
+
+            if (step >= spinTimeLeftRight) {
+                clearInterval(interval);
+
+                // 左右リールを目標の出目でビタ止め
+                elReel1.textContent = targetLeft;
+                elReel3.textContent = targetRight;
+
+                if (isReach) {
+                    elEffect.textContent = "🔥 リーチ！！ 🔥";
+
+                    // --- フェーズ2: 中リール低速回転 ---
+                    let centerStep = 0;
+                    const centerSpinTime = (gameMode === "ST") ? 10 : 25;
+
+                    const centerInterval = setInterval(() => {
+                        centerStep++;
+                        elReel2.textContent = getNextNum(elReel2.textContent);
+
+                        if (centerStep >= centerSpinTime) {
+                            clearInterval(centerInterval);
+                            
+                            // 中リール固定
+                            elReel2.textContent = targetCenter;
+                            
+                            if (isWin) {
+                                if (isOddWin) {
+                                    elEffect.textContent = `【${targetCenter}揃い】ST「インパクトモード」突入！`;
+                                    gameMode = "ST";
+                                    modeRemains = RATES.ST_TURNS;
+                                } else {
+                                    elEffect.textContent = `【${targetCenter}揃い】「チャンスタイム(時短100回)」突入`;
+                                    gameMode = "JITITAN";
+                                    modeRemains = RATES.JITITAN_TURNS;
+                                }
+                            } else {
+                                elEffect.textContent = "ハズレ...";
+                            }
+
+                            finishSpin();
+                        }
+                    }, 60);
+
+                } else {
+                    // 通常ハズレ
+                    elReel2.textContent = targetCenter;
+                    finishSpin();
+                }
+            }
+        }, 50);
+    }
+
+    // 変動終了処理（モード管理）
+    function finishSpin() {
+        // ST・時短の終了判定
+        if (gameMode !== "NORMAL" && modeRemains <= 0) {
+            elEffect.textContent = `${gameMode === "ST" ? "ST" : "時短"}終了...`;
+            gameMode = "NORMAL";
+            modeRemains = 0;
+        }
+
+        // モード表示の更新
+        if (gameMode === "ST") {
+            elMode.textContent = "インパクトモード (ST)";
+            elMode.className = "mode-st";
+            elStCount.textContent = `ST残り: ${modeRemains}回`;
+        } else if (gameMode === "JITITAN") {
+            elMode.textContent = "チャンスタイム (時短)";
+            elMode.className = "mode-jititan";
+            elStCount.textContent = `時短残り: ${modeRemains}回`;
+        } else {
+            elMode.textContent = "通常モード";
+            elMode.className = "mode-normal";
+            elStCount.textContent = "";
+        }
+
+        setTimeout(() => {
+            startNextSpin();
+        }, 800);
+    }
+</script>
+
+</body>
+</html>
