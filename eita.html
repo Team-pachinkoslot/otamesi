@@ -427,6 +427,10 @@ if (gameMode === "NORMAL" && isWin && isOddWin && Math.random() < 1.00) {
     function recordWinHistory(isOddWin, winNum) {
         totalWinCount++;
         
+        // ★ 大当り時に回転数を0にリセット
+    totalSpins = 0;
+    elTotalSpins.textContent = totalSpins;
+    
         let typeName = "";
         let cssClass = "";
 
