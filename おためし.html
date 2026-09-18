@@ -332,6 +332,18 @@ function finalizeSpin(isWin, isReach, reachNum) {
         startNextSpin();
     }, 1000);
 }}
+
+// ① 音声ファイルの読み込み
+const seReach = new Audio('sound_01.mp3');
+const seWin   = new Audio('sounds/win.mp3');
+const bgmST   = new Audio('sounds/rush_bgm.mp3');
+
+// ② 鳴らしたいタイミングで再生
+// リーチが発生した時
+if (isReach) {
+    seReach.currentTime = 0; // 頭出し
+    seReach.play();
+}
 </script>
 
 </body>
