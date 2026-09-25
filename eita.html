@@ -106,7 +106,7 @@
             box-shadow: 0 0 10px rgba(255, 0, 85, 0.6);
         }
 
-        /* デバッグエリア用スタイル */
+        /* デバッグ操作用スタイル */
         #debug-controls {
             margin-top: 15px;
             padding: 10px;
@@ -196,7 +196,7 @@
 
     <!-- デバッグ用ボタンエリア -->
     <div id="debug-controls">
-        <div class="debug-title">🛠 デバッグ操作（テスト用）</div>
+        <div class="debug-title">🛠 デバッグ操作（テスト用大当りボタン）</div>
         <div style="display: flex; gap: 5px; justify-content: center;">
             <button onclick="debugTriggerWin('NORMAL_EVEN')">通常: 時短当り</button>
             <button onclick="debugTriggerWin('NORMAL_ODD')">通常: RUSH当り</button>
@@ -218,7 +218,7 @@
 <script>
     // 音声ファイルの指定
     const seReachNormal = new Audio('');
-    const seImpactFlash = new Audio('sound_01.mp3'); // インパクトフラッシュ音
+    const seImpactFlash = new Audio('./sound_01.mp3'); // インパクトフラッシュ音
 
     // パラメータ設定
     const RATES = {
@@ -333,6 +333,7 @@
         runSpinAnimation(currentSpinData.isWin);
     }
 
+    // デバッグ用大当りトリガー
     function debugTriggerWin(type) {
         if (isSpinning) return;
 
@@ -416,21 +417,21 @@
                     let isSpecialReachSound = false;
 
                     // 1. 通常時の「奇数図柄大当り」時、10%でインパクトフラッシュ音
-                    if (gameMode === "NORMAL" && isWin && isOddWin && Math.random() < 1.00) {
+                    if (gameMode === "NORMAL" && isWin && isOddWin && Math.random() < 0.10) {
                         isSpecialReachSound = true;
                         seImpactFlash.currentTime = 0;
                         seImpactFlash.play().catch(e => console.log(e));
                         elEffect.textContent = "⚡🌈 インパクトフラッシュ発生！！ 🌈⚡";
 
                     // 2. ST中の「大当り」時、50%でインパクトフラッシュ音
-                    } else if (gameMode === "ST" && isWin && Math.random() < 1.00) {
+                    } else if (gameMode === "ST" && isWin && Math.random() < 0.50) {
                         isSpecialReachSound = true;
                         seImpactFlash.currentTime = 0;
                         seImpactFlash.play().catch(e => console.log(e));
                         elEffect.textContent = "⚡🌈 インパクトフラッシュ発生！！ 🌈⚡";
                     
                     // 3. 時短中の「大当り」時、20%でインパクトフラッシュ音
-                    } else if (gameMode === "JITITAN" && isWin && Math.random() < 1.00) {
+                    } else if (gameMode === "JITITAN" && isWin && Math.random() < 0.20) {
                         isSpecialReachSound = true;
                         seImpactFlash.currentTime = 0;
                         seImpactFlash.play().catch(e => console.log(e));
