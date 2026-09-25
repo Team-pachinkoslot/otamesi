@@ -184,7 +184,7 @@
     </div>
 </div>
 
-<div id="version-display">Ver. 1.9</div>
+<div id="version-display">Ver. 1.9.1</div>
 
 <script>
     // 音声ファイルの指定
@@ -329,6 +329,32 @@
             runSpinAnimation(true, true);
         }
     }
+
+    // デバッグ実行用関数
+function debugTriggerWin(type) {
+    if (isSpinning) return; // 回転中は無効
+
+    totalSpins++;
+    spinAtLastWin++;
+    elTotalSpins.textContent = totalSpins;
+    isSpinning = true;
+
+    if (type === 'NORMAL_EVEN') {
+        gameMode = "NORMAL";
+        runSpinAnimation(true, false); // 大当り(true), 奇数フラグ(false -> 偶数/時短)
+    } else if (type === 'NORMAL_ODD') {
+        gameMode = "NORMAL";
+        runSpinAnimation(true, true);  // 大当り(true), 奇数フラグ(true -> RUSH)
+    } else if (type === 'RIGHT_WIN') {
+        if (gameMode === "NORMAL") {
+            gameMode = "ST";
+            modeRemains = RATES.ST_TURNS;
+        } else {
+            modeRemains--;
+        }
+        runSpinAnimation(true, true);  // 右打ち中はST確定(奇数)
+    }
+}
 
     function getNextNum(current) {
         let val = parseInt(current) || 1;
