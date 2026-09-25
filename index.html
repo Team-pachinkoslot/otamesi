@@ -106,6 +106,27 @@
             box-shadow: 0 0 10px rgba(255, 0, 85, 0.6);
         }
 
+        /* デバッグ操作用スタイル */
+        #debug-controls {
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #2a2a2a;
+            border: 1px dashed #777;
+            border-radius: 5px;
+        }
+        .debug-title {
+            font-size: 12px;
+            color: #aaa;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        #debug-controls button {
+            padding: 6px 10px;
+            font-size: 12px;
+            background: linear-gradient(135deg, #444, #555);
+            border: 1px solid #888;
+        }
+
         #history-box {
             margin-top: 15px;
             background-color: #1a1a1a;
@@ -173,6 +194,16 @@
         <button id="auto-btn" onclick="toggleAutoPlay()">オート: OFF</button>
     </div>
 
+    <!-- デバッグ用ボタンエリア -->
+    <div id="debug-controls">
+        <div class="debug-title">🛠 デバッグ操作（テスト用大当りボタン）</div>
+        <div style="display: flex; gap: 5px; justify-content: center;">
+            <button onclick="debugTriggerWin('NORMAL_EVEN')">通常: 時短当り</button>
+            <button onclick="debugTriggerWin('NORMAL_ODD')">通常: RUSH当り</button>
+            <button onclick="debugTriggerWin('RIGHT_WIN')">右打ち中大当り</button>
+        </div>
+    </div>
+
     <div id="history-box">
         <div id="history-title">
             <span>大当り履歴</span>
@@ -184,12 +215,12 @@
     </div>
 </div>
 
-<div id="version-display">Ver. 1.9.1</div>
+<div id="version-display">Ver. 1.9.2</div>
 
 <script>
     // 音声ファイルの指定
     const seReachNormal = new Audio('');
-    const seImpactFlash = new Audio('sound_01.mp3'); // インパクトフラッシュ音
+    const seImpactFlash = new Audio('./sound_01.mp3'); // インパクトフラッシュ音
 
     // パラメータ設定
     const RATES = {
@@ -304,6 +335,7 @@
         runSpinAnimation(currentSpinData.isWin);
     }
 
+    // デバッグ用大当りトリガー
     function debugTriggerWin(type) {
         if (isSpinning) return;
 
@@ -329,32 +361,6 @@
             runSpinAnimation(true, true);
         }
     }
-
-    // デバッグ実行用関数
-function debugTriggerWin(type) {
-    if (isSpinning) return; // 回転中は無効
-
-    totalSpins++;
-    spinAtLastWin++;
-    elTotalSpins.textContent = totalSpins;
-    isSpinning = true;
-
-    if (type === 'NORMAL_EVEN') {
-        gameMode = "NORMAL";
-        runSpinAnimation(true, false); // 大当り(true), 奇数フラグ(false -> 偶数/時短)
-    } else if (type === 'NORMAL_ODD') {
-        gameMode = "NORMAL";
-        runSpinAnimation(true, true);  // 大当り(true), 奇数フラグ(true -> RUSH)
-    } else if (type === 'RIGHT_WIN') {
-        if (gameMode === "NORMAL") {
-            gameMode = "ST";
-            modeRemains = RATES.ST_TURNS;
-        } else {
-            modeRemains--;
-        }
-        runSpinAnimation(true, true);  // 右打ち中はST確定(奇数)
-    }
-}
 
     function getNextNum(current) {
         let val = parseInt(current) || 1;
@@ -413,21 +419,21 @@ function debugTriggerWin(type) {
                     let isSpecialReachSound = false;
 
                     // 1. 通常時の「奇数図柄大当り」時、10%でインパクトフラッシュ音
-                    if (gameMode === "NORMAL" && isWin && isOddWin && Math.random() < 1.00) {
+                    if (gameMode === "NORMAL" && isWin && isOddWin && Math.random() < 0.10) {
                         isSpecialReachSound = true;
                         seImpactFlash.currentTime = 0;
                         seImpactFlash.play().catch(e => console.log(e));
                         elEffect.textContent = "⚡🌈 インパクトフラッシュ発生！！ 🌈⚡";
 
                     // 2. ST中の「大当り」時、50%でインパクトフラッシュ音
-                    } else if (gameMode === "ST" && isWin && Math.random() < 1.00) {
+                    } else if (gameMode === "ST" && isWin && Math.random() < 0.50) {
                         isSpecialReachSound = true;
                         seImpactFlash.currentTime = 0;
                         seImpactFlash.play().catch(e => console.log(e));
                         elEffect.textContent = "⚡🌈 インパクトフラッシュ発生！！ 🌈⚡";
                     
                     // 3. 時短中の「大当り」時、20%でインパクトフラッシュ音
-                    } else if (gameMode === "JITITAN" && isWin && Math.random() < 1.00) {
+                    } else if (gameMode === "JITITAN" && isWin && Math.random() < 0.20) {
                         isSpecialReachSound = true;
                         seImpactFlash.currentTime = 0;
                         seImpactFlash.play().catch(e => console.log(e));
