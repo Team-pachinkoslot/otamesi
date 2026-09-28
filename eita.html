@@ -192,6 +192,10 @@
     <div id="controls">
         <button id="shoot-btn" onclick="addHold()">玉を打つ</button>
         <button id="auto-btn" onclick="toggleAutoPlay()">オート: OFF</button>
+        <!-- 既存のボタンの並びに以下を追加 -->
+<button id="check-time-btn" onclick="showLastSpinTime()" style="background-color: #ff9800; color: white; font-weight: bold;">
+    ⏱ 変動時間を確認
+</button>
     </div>
 
     <!-- デバッグ用ボタンエリア -->
@@ -550,6 +554,14 @@
             modeRemains = 0;
             currentChain = 0;
         }
+        function finishSpin() {
+    // ★ 変動完了時に時間を計算して保存しておく
+    if (spinStartTime > 0) {
+        lastSpinDuration = Math.round(performance.now() - spinStartTime);
+    }
+
+    /* ... 以下、既存の finishSpin の処理 ... */
+}
 
         if (gameMode === "ST") {
             elMode.textContent = "インパクトモード (ST)";
@@ -569,6 +581,15 @@
             startNextSpin();
         }, 800);
     }
+    // ★ ボタンが押されたら結果をポップアップ（アラート）で教える関数
+function showLastSpinTime() {
+    if (lastSpinDuration > 0) {
+        const sec = (lastSpinDuration / 1000).toFixed(2);
+        alert(`【直前の変動時間】\n${lastSpinDuration} ms （約 ${sec} 秒）`);
+    } else {
+        alert("まだ変動データの記録がありません。\n1回転以上回してから押してください。");
+    }
+}
 </script>
 
 </body>
