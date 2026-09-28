@@ -2,227 +2,252 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>エヴァ15風 パチンコ SIM</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>パチンコシミュレーター</title>
     <style>
         body {
-            background-color: #111;
-            color: #fff;
-            font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: #ffffff;
+            font-family: 'Arial', sans-serif;
             text-align: center;
             margin: 0;
             padding: 20px;
         }
+
         #game-container {
-            width: 420px;
+            max-width: 500px;
             margin: 0 auto;
-            background-color: #222;
-            border: 4px solid #555;
-            border-radius: 10px;
-            padding: 15px;
-            box-shadow: 0 0 20px rgba(128, 0, 128, 0.5);
+            background: #1e1e1e;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0,255,200,0.2);
+            border: 2px solid #333;
         }
+
+        /* ステータスバー */
         #status-bar {
             display: flex;
-            justify-content: space-between;
-            background: #333;
-            padding: 8px;
-            margin-bottom: 10px;
+            justify-content: space-around;
+            align-items: center;
+            background: #2a2a2a;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
             font-weight: bold;
-            font-size: 14px;
         }
-        .mode-normal { color: #00ffff; }
-        .mode-st { color: #ff00ff; animation: blink 0.5s infinite alternate; }
-        .mode-jititan { color: #00ff66; }
-        @keyframes blink { from { opacity: 1; } to { opacity: 0.6; } }
 
-        #screen {
-            background: #000;
-            border: 2px solid #888;
-            height: 220px;
+        .mode-normal { color: #00e5ff; }
+        .mode-st { color: #ff0055; text-shadow: 0 0 8px #ff0055; }
+        .mode-jititan { color: #ffaa00; }
+
+        /* リール表示エリア */
+        #reel-container {
             display: flex;
-            flex-direction: column;
             justify-content: center;
-            align-items: center;
-            position: relative;
-            overflow: hidden;
-        }
-        #reels {
-            display: flex;
             gap: 15px;
-            font-size: 64px;
-            font-weight: bold;
-            text-shadow: 0 0 10px #fff;
+            margin: 20px 0;
         }
+
+        .reel {
+            width: 80px;
+            height: 100px;
+            background: #000;
+            border: 3px solid #444;
+            border-radius: 10px;
+            font-size: 54px;
+            font-weight: bold;
+            line-height: 100px;
+            color: #fff;
+            box-shadow: inset 0 0 10px rgba(255,255,255,0.2);
+        }
+
+        /* 演出テキスト */
         #effect-text {
-            font-size: 18px;
-            color: #ffcc00;
-            height: 30px;
-            margin-top: 15px;
+            height: 35px;
+            font-size: 20px;
             font-weight: bold;
+            color: #ffeb3b;
+            margin: 10px 0;
         }
-        #hold-container {
+
+        /* 演出用 PUSHボタン */
+        #push-btn-container {
             margin: 15px 0;
+        }
+
+        #push-btn {
+            padding: 12px 35px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #888;
+            background: linear-gradient(135deg, #333, #555);
+            border: 3px solid #666;
+            border-radius: 25px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.5);
+            cursor: not-allowed;
+            transition: all 0.2s;
+        }
+
+        /* PUSHボタン点滅アクティブ時 */
+        #push-btn.active {
+            color: #fff;
+            background: linear-gradient(135deg, #ff0055, #ff5500);
+            border-color: #ffff00;
+            box-shadow: 0 0 15px #ff0055;
+            cursor: pointer;
+            animation: pulse 0.6s infinite alternate;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.08); }
+        }
+
+        /* 保留表示 */
+        #hold-container {
             display: flex;
             justify-content: center;
-            align-items: center;
             gap: 10px;
+            margin: 15px 0;
         }
+
         .hold-ball {
             width: 20px;
             height: 20px;
             border-radius: 50%;
             background: #444;
-            border: 1px solid #888;
-        }
-        .hold-blue { background: #0088ff; box-shadow: 0 0 5px #0088ff; }
-        .hold-red { background: #ff0000; box-shadow: 0 0 8px #ff0000; }
-
-        #controls {
-            margin-top: 15px;
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-        }
-        button {
-            padding: 12px 18px;
-            font-size: 16px;
-            background: linear-gradient(135deg, #8a2be2, #4b0082);
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-            font-weight: bold;
-        }
-        button:active {
-            transform: translateY(2px);
-        }
-        #auto-btn {
-            background: linear-gradient(135deg, #444, #222);
             border: 1px solid #666;
         }
-        #auto-btn.auto-on {
-            background: linear-gradient(135deg, #ff0055, #990033);
-            box-shadow: 0 0 10px rgba(255, 0, 85, 0.6);
+
+        .hold-blue { background: #0088ff; box-shadow: 0 0 8px #0088ff; }
+        .hold-red { background: #ff0000; box-shadow: 0 0 8px #ff0000; }
+
+        /* コントロールボタン */
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 15px;
         }
 
-        /* デバッグ操作用スタイル */
-        #debug-controls {
-            margin-top: 15px;
-            padding: 10px;
-            background-color: #2a2a2a;
-            border: 1px dashed #777;
-            border-radius: 5px;
-        }
-        .debug-title {
-            font-size: 12px;
-            color: #aaa;
-            margin-bottom: 8px;
+        button.ctrl-btn {
+            padding: 10px 20px;
+            font-size: 16px;
             font-weight: bold;
-        }
-        #debug-controls button {
-            padding: 6px 10px;
-            font-size: 12px;
-            background: linear-gradient(135deg, #444, #555);
-            border: 1px solid #888;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            background: #00e5ff;
+            color: #000;
+            transition: opacity 0.2s;
         }
 
-        #history-box {
-            margin-top: 15px;
-            background-color: #1a1a1a;
-            border: 1px solid #444;
-            border-radius: 5px;
+        button.ctrl-btn:hover { opacity: 0.8; }
+        #auto-btn.auto-on { background: #ff0055; color: #fff; }
+
+        /* デバッグ・検証パネル */
+        #debug-panel {
+            background: #111;
+            border: 1px dashed #555;
             padding: 10px;
+            margin-top: 15px;
+            border-radius: 8px;
+        }
+
+        #debug-panel button {
+            padding: 6px 12px;
+            margin: 3px;
+            font-size: 12px;
+            cursor: pointer;
+            background: #333;
+            color: #fff;
+            border: 1px solid #666;
+            border-radius: 4px;
+        }
+
+        /* 履歴・データ表示 */
+        #history-container {
+            margin-top: 20px;
             text-align: left;
-            font-size: 13px;
+            background: #252525;
+            padding: 10px 15px;
+            border-radius: 8px;
         }
-        #history-title {
-            font-weight: bold;
-            color: #ffcc00;
-            margin-bottom: 5px;
-            border-bottom: 1px solid #444;
-            padding-bottom: 3px;
+
+        ul { list-style: none; padding: 0; margin: 5px 0 0 0; }
+        li {
             display: flex;
             justify-content: space-between;
+            border-bottom: 1px solid #333;
+            padding: 4px 0;
+            font-size: 14px;
         }
-        #history-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-            max-height: 120px;
-            overflow-y: auto;
-        }
-        #history-list li {
-            padding: 3px 0;
-            border-bottom: 1px dashed #333;
-            display: flex;
-            justify-content: space-between;
-        }
-        .tag-st { color: #ff00ff; font-weight: bold; }
-        .tag-normal { color: #00ffff; }
-        .tag-jititan { color: #00ff66; }
+
+        .tag-st { color: #ff0055; }
+        .tag-jititan { color: #ffaa00; }
     </style>
 </head>
 <body>
 
 <div id="game-container">
+    <!-- ステータスバー -->
     <div id="status-bar">
         <span id="mode-display" class="mode-normal">通常モード</span>
         <span id="st-count"></span>
         <span>回転数: <span id="total-spins">0</span></span>
     </div>
 
-    <div id="screen">
-        <div id="reels">
-            <span id="reel1">1</span>
-            <span id="reel2">2</span>
-            <span id="reel3">3</span>
-        </div>
-        <div id="effect-text"></div>
+    <!-- リール表示 -->
+    <div id="reel-container">
+        <div id="reel1" class="reel">1</div>
+        <div id="reel2" class="reel">2</div>
+        <div id="reel3" class="reel">3</div>
     </div>
 
+    <!-- 演出表示 -->
+    <div id="effect-text"></div>
+
+    <!-- ★ 演出用 PUSHボタン -->
+    <div id="push-btn-container">
+        <button id="push-btn" onclick="onPushBtnClick()" disabled>PUSH</button>
+    </div>
+
+    <!-- 保留ランプ -->
     <div id="hold-container">
-        <span>保留:</span>
-        <div class="hold-ball" id="hold0"></div>
-        <div class="hold-ball" id="hold1"></div>
-        <div class="hold-ball" id="hold2"></div>
-        <div class="hold-ball" id="hold3"></div>
+        <div id="hold0" class="hold-ball"></div>
+        <div id="hold1" class="hold-ball"></div>
+        <div id="hold2" class="hold-ball"></div>
+        <div id="hold3" class="hold-ball"></div>
     </div>
 
-    <div id="controls">
-        <button id="shoot-btn" onclick="addHold()">玉を打つ</button>
-        <button id="auto-btn" onclick="toggleAutoPlay()">オート: OFF</button>
-        <!-- 既存のボタンの並びに以下を追加 -->
-<button id="check-time-btn" onclick="showLastSpinTime()" style="background-color: #ff9800; color: white; font-weight: bold;">
-    ⏱ 変動時間を確認
-</button>
+    <!-- 操作ボタン -->
+    <div class="btn-group">
+        <button class="ctrl-btn" onclick="addHold()">チャッカー入賞</button>
+        <button id="auto-btn" class="ctrl-btn" onclick="toggleAutoPlay()">オート: OFF</button>
     </div>
 
-    <!-- デバッグ用ボタンエリア -->
-    <div id="debug-controls">
-        <div class="debug-title">🛠 デバッグ操作（テスト用大当りボタン）</div>
-        <div style="display: flex; gap: 5px; justify-content: center;">
-            <button onclick="debugTriggerWin('NORMAL_EVEN')">通常: 時短当り</button>
-            <button onclick="debugTriggerWin('NORMAL_ODD')">通常: RUSH当り</button>
-            <button onclick="debugTriggerWin('RIGHT_WIN')">右打ち中大当り</button>
+    <!-- デバッグ用強制大当りボタン -->
+    <div id="debug-panel">
+        <span style="font-size: 12px; color: #aaa;">【デバッグ機能】</span><br>
+        <button onclick="debugTriggerWin('NORMAL_EVEN')">通常当り(偶数)</button>
+        <button onclick="debugTriggerWin('NORMAL_ODD')">確変当り(奇数)</button>
+        <button onclick="debugTriggerWin('RIGHT_WIN')">右打ち中当り</button>
+    </div>
+
+    <!-- 履歴・成績表示 -->
+    <div id="history-container">
+        <div style="display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 5px;">
+            <span>総大当り: <span id="total-wins">0</span>回</span>
+            <span>最高継続: <span id="max-chain">0</span>連</span>
         </div>
-    </div>
-
-    <div id="history-box">
-        <div id="history-title">
-            <span>大当り履歴</span>
-            <span>通算大当り: <span id="total-wins">0</span>回 (最高<span id="max-chain">0</span>連)</span>
-        </div>
-        <ul id="history-list">
-            <li style="color: #888;">履歴はありません</li>
-        </ul>
+        <ul id="history-list"></ul>
     </div>
 </div>
 
 <script>
     // 音声ファイルの指定
-    const seReachNormal = new Audio('');
-    const seImpactFlash = new Audio('./sound_01.mp3'); // インパクトフラッシュ音
+    const seReachNormal = new Audio('sounds/reach.mp3');
+    const seImpactFlash = new Audio('sounds/impact_flash.mp3');
 
     // パラメータ設定
     const RATES = {
@@ -257,6 +282,16 @@
     let maxChain = 0;
     let totalWinCount = 0;
 
+    // 変動時間計測用（内部処理）
+    let spinStartTime = 0;
+    let lastSpinDuration = 0;
+
+    // ★ 演出用PUSHボタンの状態制御フラグ
+    let canPush = false;
+    let currentIsWin = false;
+    let currentIsOdd = false;
+
+    // DOM要素
     const elReel1 = document.getElementById('reel1');
     const elReel2 = document.getElementById('reel2');
     const elReel3 = document.getElementById('reel3');
@@ -268,6 +303,7 @@
     const elTotalWins = document.getElementById('total-wins');
     const elMaxChain = document.getElementById('max-chain');
     const elAutoBtn = document.getElementById('auto-btn');
+    const elPushBtn = document.getElementById('push-btn');
 
     function addHold() {
         if (holds.length >= 4) return;
@@ -371,32 +407,42 @@
 
     function runSpinAnimation(isWin, forcedIsOdd = null) {
         elEffect.textContent = "";
-        const isReach = isWin || (Math.random() < 0.15);
+        deactivatePushBtn(); // 変動開始時はボタンオフ
+        
+        spinStartTime = performance.now(); // 開始時刻を記録
+
+        // 当落情報をグローバル保持
+        currentIsWin = isWin;
+
+        // 時短中のハズレ時リーチ発生率を3%に削減（通常・ST中は15%）
+        const reachRate = (gameMode === "JITITAN") ? 0.03 : 0.15;
+        const isReach = isWin || (Math.random() < reachRate);
 
         let targetLeft, targetCenter, targetRight;
-        let isOddWin = false;
 
         if (isWin) {
             if (forcedIsOdd !== null) {
-                isOddWin = forcedIsOdd;
+                currentIsOdd = forcedIsOdd;
             } else if (gameMode === "ST" || gameMode === "JITITAN") {
-                isOddWin = true;
+                currentIsOdd = true;
             } else {
-                isOddWin = Math.random() < RATES.ODD_WIN_RATE;
+                currentIsOdd = Math.random() < RATES.ODD_WIN_RATE;
             }
 
-            const winArray = isOddWin ? ODD_NUMBERS : EVEN_NUMBERS;
+            const winArray = currentIsOdd ? ODD_NUMBERS : EVEN_NUMBERS;
             const winNum = winArray[Math.floor(Math.random() * winArray.length)];
             
             targetLeft = winNum;
             targetCenter = winNum;
             targetRight = winNum;
         } else if (isReach) {
+            currentIsOdd = false;
             const reachNum = ALL_NUMBERS[Math.floor(Math.random() * ALL_NUMBERS.length)];
             targetLeft = reachNum;
             targetRight = reachNum;
             targetCenter = (reachNum % 9) + 1;
         } else {
+            currentIsOdd = false;
             const pattern = FIXED_LOSE_PATTERNS[Math.floor(Math.random() * FIXED_LOSE_PATTERNS.length)];
             targetLeft = pattern[0];
             targetCenter = pattern[1];
@@ -404,7 +450,8 @@
         }
 
         let step = 0;
-        const spinTimeLeftRight = (gameMode === "ST") ? 8 : 15;
+        // 時短中・ST中の通常変動時間を短縮
+        const spinTimeLeftRight = (gameMode === "ST" || gameMode === "JITITAN") ? 8 : 15;
 
         const interval = setInterval(() => {
             step++;
@@ -418,30 +465,22 @@
                 elReel3.textContent = targetRight;
 
                 if (isReach) {
-                    let isSpecialReachSound = false;
+                    // ★ リーチが確定したら演出用PUSHボタンを点滅有効化！
+                    activatePushBtn();
 
-                    // 1. 通常時の「奇数図柄大当り」時、10%でインパクトフラッシュ音
-                    if (gameMode === "NORMAL" && isWin && isOddWin && Math.random() < 0.10) {
-                        isSpecialReachSound = true;
+                    // 音演出判定
+                    if (gameMode === "NORMAL" && isWin && currentIsOdd && Math.random() < 0.10) {
                         seImpactFlash.currentTime = 0;
                         seImpactFlash.play().catch(e => console.log(e));
                         elEffect.textContent = "⚡🌈 インパクトフラッシュ発生！！ 🌈⚡";
-
-                    // 2. ST中の「大当り」時、50%でインパクトフラッシュ音
                     } else if (gameMode === "ST" && isWin && Math.random() < 0.50) {
-                        isSpecialReachSound = true;
                         seImpactFlash.currentTime = 0;
                         seImpactFlash.play().catch(e => console.log(e));
                         elEffect.textContent = "⚡🌈 インパクトフラッシュ発生！！ 🌈⚡";
-                    
-                    // 3. 時短中の「大当り」時、20%でインパクトフラッシュ音
                     } else if (gameMode === "JITITAN" && isWin && Math.random() < 0.20) {
-                        isSpecialReachSound = true;
                         seImpactFlash.currentTime = 0;
                         seImpactFlash.play().catch(e => console.log(e));
                         elEffect.textContent = "⚡🌈 インパクトフラッシュ発生！！ 🌈⚡";
-                    
-                    // 通常のリーチ音
                     } else {
                         seReachNormal.currentTime = 0;
                         seReachNormal.play().catch(e => console.log(e));
@@ -449,7 +488,13 @@
                     }
 
                     let centerStep = 0;
-                    const centerSpinTime = (gameMode === "ST") ? 10 : 25;
+                    // モード毎のリーチ演出時間（通常時:50, ST時:25, 時短時:15）
+                    let centerSpinTime = 50;
+                    if (gameMode === "ST") {
+                        centerSpinTime = 25;
+                    } else if (gameMode === "JITITAN") {
+                        centerSpinTime = 15;
+                    }
 
                     const centerInterval = setInterval(() => {
                         centerStep++;
@@ -460,9 +505,9 @@
                             elReel2.textContent = targetCenter;
                             
                             if (isWin) {
-                                recordWinHistory(isOddWin, targetCenter);
+                                recordWinHistory(currentIsOdd, targetCenter);
 
-                                if (isOddWin) {
+                                if (currentIsOdd) {
                                     elEffect.textContent = `【${targetCenter}揃い】ST「インパクトモード」突入！`;
                                     gameMode = "ST";
                                     modeRemains = RATES.ST_TURNS;
@@ -475,6 +520,7 @@
                                 elEffect.textContent = "ハズレ...";
                             }
 
+                            deactivatePushBtn();
                             finishSpin();
                         }
                     }, 60);
@@ -487,10 +533,46 @@
         }, 50);
     }
 
+    // ★ 演出用PUSHボタンが押された時の挙動
+    function onPushBtnClick() {
+        if (!canPush) return;
+        canPush = false; // 連打・重複防止
+
+        elPushBtn.style.transform = "scale(0.95)";
+        setTimeout(() => elPushBtn.style.transform = "scale(1)", 100);
+
+        if (currentIsWin) {
+            seImpactFlash.currentTime = 0;
+            seImpactFlash.play().catch(e => console.log(e));
+
+            if (currentIsOdd) {
+                elEffect.textContent = "⚡🌈 PUSH成功！【確変大当り】 🌈⚡";
+            } else {
+                elEffect.textContent = "🎉 PUSH成功！【大当り】 🎉";
+            }
+        } else {
+            elEffect.textContent = "❌ PUSH失敗...（ハズレ）";
+        }
+
+        deactivatePushBtn();
+    }
+
+    function activatePushBtn() {
+        canPush = true;
+        elPushBtn.disabled = false;
+        elPushBtn.classList.add('active');
+        elPushBtn.textContent = "🔥 PUSH!! 🔥";
+    }
+
+    function deactivatePushBtn() {
+        canPush = false;
+        elPushBtn.disabled = true;
+        elPushBtn.classList.remove('active');
+        elPushBtn.textContent = "PUSH";
+    }
+
     function recordWinHistory(isOddWin, winNum) {
         totalWinCount++;
-
-        // 大当り時に回転数をリセット
         totalSpins = 0;
         elTotalSpins.textContent = totalSpins;
         
@@ -548,20 +630,18 @@
     }
 
     function finishSpin() {
+        // 変動時間の内部計算（コンソール出力用）
+        if (spinStartTime > 0) {
+            lastSpinDuration = Math.round(performance.now() - spinStartTime);
+            console.log(`[変動時間] ${lastSpinDuration}ms (${(lastSpinDuration / 1000).toFixed(2)}秒)`);
+        }
+
         if (gameMode !== "NORMAL" && modeRemains <= 0) {
             elEffect.textContent = `${gameMode === "ST" ? "ST" : "時短"}終了...`;
             gameMode = "NORMAL";
             modeRemains = 0;
             currentChain = 0;
         }
-        function finishSpin() {
-    // ★ 変動完了時に時間を計算して保存しておく
-    if (spinStartTime > 0) {
-        lastSpinDuration = Math.round(performance.now() - spinStartTime);
-    }
-
-    /* ... 以下、既存の finishSpin の処理 ... */
-}
 
         if (gameMode === "ST") {
             elMode.textContent = "インパクトモード (ST)";
@@ -581,15 +661,6 @@
             startNextSpin();
         }, 800);
     }
-    // ★ ボタンが押されたら結果をポップアップ（アラート）で教える関数
-function showLastSpinTime() {
-    if (lastSpinDuration > 0) {
-        const sec = (lastSpinDuration / 1000).toFixed(2);
-        alert(`【直前の変動時間】\n${lastSpinDuration} ms （約 ${sec} 秒）`);
-    } else {
-        alert("まだ変動データの記録がありません。\n1回転以上回してから押してください。");
-    }
-}
 </script>
 
 </body>
