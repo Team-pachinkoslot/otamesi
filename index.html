@@ -215,7 +215,7 @@
     </div>
 </div>
 
-<div id="version-display">Ver. 1.9.3</div>
+<div id="version-display">Ver. 1.9.4</div>
 
 <script>
     // 音声ファイルの指定
@@ -236,8 +236,8 @@
     const ALL_NUMBERS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
     const FIXED_LOSE_PATTERNS = [
-        [1, 2, 3], [2, 4, 6], [3, 5, 7], [9,5,3],
-        [4, 1, 5], [5, 8, 2], [6, 3, 9], [8, 2, 4],[1,6,8],[4,5,9]
+        [1, 9, 3], [2, 4, 6], [3, 5, 7], [9,5,3],[2,6,3],[3,9,1]
+        [4, 1, 5], [5, 8, 2], [6, 3, 9], [8, 2, 4],[1,6,8],[4,5,9],[5,2,8],[6,1,8],[7,9,5],[8,3,5],[9,4,2]
     ];
 
     let totalSpins = 0;
@@ -368,8 +368,11 @@
     }
 
     function runSpinAnimation(isWin, forcedIsOdd = null) {
-        elEffect.textContent = "";
-        const isReach = isWin || (Math.random() < 0.15);
+    elEffect.textContent = "";
+
+    // ★ 時短中のハズレ時リーチ発生率を3%に削減（通常・ST中は15%）
+    const reachRate = (gameMode === "JITITAN") ? 0.03 : 0.15;
+    const isReach = isWin || (Math.random() < reachRate);
 
         let targetLeft, targetCenter, targetRight;
         let isOddWin = false;
@@ -447,7 +450,13 @@
                     }
 
                     let centerStep = 0;
-                    const centerSpinTime = (gameMode === "ST") ? 10 : 25;
+                    // ★ モード毎のリーチ演出時間を調整（通常時:50, ST時:25, 時短時:15）
+                    let centerSpinTime = 50;
+                    if (gameMode === "ST") {
+                        centerSpinTime = 25;
+                    } else if (gameMode === "JITITAN") {
+                       centerSpinTime = 15; // 時短中は短縮
+                    }
 
                     const centerInterval = setInterval(() => {
                         centerStep++;
