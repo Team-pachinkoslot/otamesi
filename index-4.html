@@ -471,6 +471,37 @@
         return (val % 9) + 1;
     }
 
+    // 1回転ごとの最終結果をVercel Logsへ記録
+    function logSpinResult(isWin, isReach, isOddWin, targetLeft, targetCenter, targetRight) {
+        let result = "ハズレ";
+
+        if (isWin) {
+            if (gameMode === "ST") {
+                result = "大当り（ST継続）";
+            } else if (gameMode === "JITITAN") {
+                result = "大当り（引き戻し）";
+            } else if (isOddWin) {
+                result = "大当り（RUSH突入）";
+            } else {
+                result = "大当り（時短突入）";
+            }
+        } else if (isReach) {
+            result = "リーチハズレ";
+        }
+
+        runtimeLog('SPIN_RESULT', {
+            result,
+            spin: spinAtLastWin,
+            totalSpins,
+            mode: gameMode,
+            modeRemains,
+            reels: [targetLeft, targetCenter, targetRight],
+            isWin,
+            isReach,
+            isOddWin: isWin ? isOddWin : null
+        });
+    }
+
     function runSpinAnimation(isWin, forcedIsOdd = null) {
     elEffect.textContent = "";
 
@@ -581,6 +612,7 @@
                             elReel2.textContent = targetCenter;
                             
                             if (isWin) {
+                                logSpinResult(true, true, isOddWin, targetLeft, targetCenter, targetRight);
                                 recordWinHistory(isOddWin, targetCenter);
 
                                 if (isOddWin) {
@@ -596,6 +628,7 @@
                                 }
                             } else {
                                 elEffect.textContent = "ハズレ...";
+                                logSpinResult(false, true, false, targetLeft, targetCenter, targetRight);
                                 runtimeLog('REACH_MISS', { targetCenter });
                             }
 
@@ -605,6 +638,7 @@
 
                 } else {
                     elReel2.textContent = targetCenter;
+                    logSpinResult(false, false, false, targetLeft, targetCenter, targetRight);
                     finishSpin();
                 }
             }
