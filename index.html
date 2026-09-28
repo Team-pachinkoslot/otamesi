@@ -215,7 +215,7 @@
     </div>
 </div>
 
-<div id="version-display">Ver. 1.9.4</div>
+<div id="version-display">Ver. 1.9.5</div>
 
 <script>
     // 音声ファイルの指定
@@ -254,6 +254,8 @@
     let currentChain = 0;
     let maxChain = 0;
     let totalWinCount = 0;
+    let spinStartTime = 0;
+    let lastSpinDuration = 0;
 
     const elReel1 = document.getElementById('reel1');
     const elReel2 = document.getElementById('reel2');
@@ -369,6 +371,7 @@
 
     function runSpinAnimation(isWin, forcedIsOdd = null) {
     elEffect.textContent = "";
+    spinStartTime = performance.now();// ★ 開始時間のみ記録
 
     // ★ 時短中のハズレ時リーチ発生率を3%に削減（通常・ST中は15%）
     const reachRate = (gameMode === "JITITAN") ? 0.03 : 0.15;
@@ -562,6 +565,12 @@
             currentChain = 0;
         }
 
+        if (spinStartTime > 0) {
+        lastSpinDuration = Math.round(performance.now() - spinStartTime);
+        // ★ タイマー表示はせず、コンソールログのみ出力
+        console.log(`[変動時間] ${lastSpinDuration}ms (${(lastSpinDuration / 1000).toFixed(2)}秒)`);
+    }/* ... 既存の finishSpin の処理 ... */
+
         if (gameMode === "ST") {
             elMode.textContent = "インパクトモード (ST)";
             elMode.className = "mode-st";
@@ -580,6 +589,16 @@
             startNextSpin();
         }, 800);
     }
+    window.addEventListener('keydown', (e) => {
+    if (e.code === 'Space') {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+        e.preventDefault();
+
+        if (lastSpinDuration > 0) {
+            console.log(`[直前の変動時間] ${lastSpinDuration}ms (${(lastSpinDuration / 1000).toFixed(2)}秒)`);
+        }
+    }
+});
 </script>
 
 </body>
