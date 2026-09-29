@@ -215,7 +215,7 @@
     </div>
 </div>
 
-<div id="version-display">Ver. 1.9.6</div>
+<div id="version-display">Ver. 1.9.7</div>
 
 <script>
     // 音声ファイルの指定
@@ -472,22 +472,17 @@
                             elReel2.textContent = targetCenter;
                             
                             if (isWin) {
-                                recordWinHistory(isOddWin, targetCenter);
-
-                                if (isOddWin) {
-                                    elEffect.textContent = `【${targetCenter}揃い】ST「インパクトモード」突入！`;
-                                    gameMode = "ST";
-                                    modeRemains = RATES.ST_TURNS;
+                                // 偶数図柄揃いの場合は全ケース再抽選演出へ移行
+                                if (!currentSpinIsOdd || currentSpinIsUpgrade) {
+                                    startUpgradeSequence(targetCenter, currentSpinIsUpgrade);
                                 } else {
-                                    elEffect.textContent = `【${targetCenter}揃い】「チャンスタイム(時短100回)」突入`;
-                                    gameMode = "JITITAN";
-                                    modeRemains = RATES.JITITAN_TURNS;
+                                    // 最初から奇数図柄で揃った場合は昇格演出を行わない
+                                    processWinResult(true, targetCenter);
                                 }
                             } else {
                                 elEffect.textContent = "ハズレ...";
+                                finishSpin();
                             }
-
-                            finishSpin();
                         }
                     }, 60);
 
@@ -497,6 +492,45 @@
                 }
             }
         }, 50);
+    }
+
+    // 再抽選（昇格 / 非昇格）演出
+    function startUpgradeSequence(initialNum, isUpgrade) {
+        elEffect.textContent = `【${initialNum}揃い】再抽選演出突入...！`;
+
+        // 昇格する場合は次の奇数図柄、昇格しない場合は最初と同じ偶数図柄
+        const targetNum = isUpgrade ? ((initialNum % 9) + 1) : initialNum;
+
+        setTimeout(() => {
+            let currentDisplay = initialNum;
+            let scrollCount = 0;
+            // 昇格時は1周+1ステップ(10回)、非昇格時はぴったり1周(9回)
+            const totalScrolls = isUpgrade ? 10 : 9;
+
+            const upgradeInterval = setInterval(() => {
+                scrollCount++;
+                currentDisplay = (currentDisplay % 9) + 1;
+
+                // 3つの図柄を揃えた状態でゆっくり1個ずつ進める
+                elReel1.textContent = currentDisplay;
+                elReel2.textContent = currentDisplay;
+                elReel3.textContent = currentDisplay;
+
+                if (scrollCount >= totalScrolls) {
+                    clearInterval(upgradeInterval);
+
+                    if (isUpgrade) {
+                        seImpactFlash.currentTime = 0;
+                        seImpactFlash.play().catch(e => console.log(e));
+                        elEffect.textContent = `⚡🌈【昇格！！】${targetNum}揃い昇格！ 🌈⚡`;
+                        setTimeout(() => { processWinResult(true, targetNum); }, 1000);
+                    } else {
+                        elEffect.textContent = `【${targetNum}揃い確定】`;
+                        setTimeout(() => { processWinResult(false, targetNum); }, 800);
+                    }
+                }
+            }, 550); // ★間隔を 120ms → 350ms に広げて重厚な動きに変更
+        }, 1200);
     }
 
     function recordWinHistory(isOddWin, winNum) {
