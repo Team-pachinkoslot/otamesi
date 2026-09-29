@@ -198,7 +198,7 @@
     <div id="debug-controls">
         <div class="debug-title">🛠 デバッグ操作（テスト用大当りボタン）</div>
         <div style="display: flex; gap: 5px; justify-content: center; flex-wrap: wrap;">
-            <button onclick="debugTriggerWin('NORMAL_EVEN')">通常: 時短当り</button>
+            <button onclick="debugTriggerWin('NORMAL_EVEN')">通常: 時短当り(再抽選失敗)</button>
             <button onclick="debugTriggerWin('NORMAL_ODD')">通常: RUSH直当り</button>
             <button onclick="debugTriggerWin('NORMAL_UPGRADE')">通常: 昇格当り(15%)</button>
             <button onclick="debugTriggerWin('RIGHT_WIN')">右打ち中大当り</button>
@@ -216,7 +216,7 @@
     </div>
 </div>
 
-<div id="version-display">Ver. 2.0.0</div>
+<div id="version-display">Ver. 2.1.0</div>
 
 <script>
     // 音声ファイルの指定
@@ -228,7 +228,7 @@
         NORMAL: 319.7,      
         ST: 99.4,           
         ODD_WIN_RATE: 0.59, 
-        UPGRADE_RATE: 0.15, // ★昇格演出の発生率（奇数当り時の15%）
+        UPGRADE_RATE: 0.15, // 昇格演出の発生率（奇数当り時の15%）
         ST_TURNS: 163,      
         JITITAN_TURNS: 100  
     };
@@ -237,7 +237,6 @@
     const EVEN_NUMBERS = [2, 4, 6, 8];
     const ALL_NUMBERS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
-    // 配列末尾のカンマ抜けエラーを修正
     const FIXED_LOSE_PATTERNS = [
         [1, 9, 3], [2, 4, 6], [3, 5, 7], [9, 5, 3], [2, 6, 3], [3, 9, 1],
         [4, 1, 5], [5, 8, 2], [6, 3, 9], [8, 2, 4], [1, 6, 8], [4, 5, 9], [5, 2, 8], [6, 1, 8], [7, 9, 5], [8, 3, 5], [9, 4, 2]
@@ -260,6 +259,9 @@
 
     let spinStartTime = 0;
     let lastSpinDuration = 0;
+
+    let currentSpinIsUpgrade = false;
+    let currentSpinIsOdd = false;
 
     const elReel1 = document.getElementById('reel1');
     const elReel2 = document.getElementById('reel2');
@@ -378,42 +380,33 @@
 
     function runSpinAnimation(isWin, forcedIsOdd = null, forcedUpgrade = null) {
         elEffect.textContent = "";
-        
         spinStartTime = performance.now();
 
         const reachRate = (gameMode === "JITITAN") ? 0.03 : 0.15;
         const isReach = isWin || (Math.random() < reachRate);
 
         let targetLeft, targetCenter, targetRight;
-        let isOddWin = false;
-        let isUpgrade = false;
 
         if (isWin) {
             if (forcedIsOdd !== null) {
-                isOddWin = forcedIsOdd;
+                currentSpinIsOdd = forcedIsOdd;
             } else if (gameMode === "ST" || gameMode === "JITITAN") {
-                isOddWin = true;
+                currentSpinIsOdd = true;
             } else {
-                isOddWin = Math.random() < RATES.ODD_WIN_RATE;
+                currentSpinIsOdd = Math.random() < RATES.ODD_WIN_RATE;
             }
 
-            // 通常時の奇数当り（RUSH突入）時に15%の確率で昇格演出が発生
-            if (gameMode === "NORMAL" && isOddWin) {
+            if (gameMode === "NORMAL" && currentSpinIsOdd) {
                 if (forcedUpgrade !== null) {
-                    isUpgrade = forcedUpgrade;
+                    currentSpinIsUpgrade = forcedUpgrade;
                 } else {
-                    isUpgrade = Math.random() < RATES.UPGRADE_RATE;
+                    currentSpinIsUpgrade = Math.random() < RATES.UPGRADE_RATE;
                 }
-            }
-
-            // 昇格発生時は一旦偶数図柄（2, 4, 6, 8）を揃える
-            let winArray;
-            if (isUpgrade) {
-                winArray = EVEN_NUMBERS;
             } else {
-                winArray = isOddWin ? ODD_NUMBERS : EVEN_NUMBERS;
+                currentSpinIsUpgrade = false;
             }
 
+            const winArray = (currentSpinIsOdd && !currentSpinIsUpgrade) ? ODD_NUMBERS : EVEN_NUMBERS;
             const winNum = winArray[Math.floor(Math.random() * winArray.length)];
             
             targetLeft = winNum;
@@ -448,28 +441,21 @@
                 if (isReach) {
                     let isSpecialReachSound = false;
 
-                    // 1. 通常時の直撃奇数図柄揃い時、10%でインパクトフラッシュ音
-                    if (gameMode === "NORMAL" && isWin && isOddWin && !isUpgrade && Math.random() < 0.10) {
+                    if (gameMode === "NORMAL" && isWin && currentSpinIsOdd && !currentSpinIsUpgrade && Math.random() < 0.10) {
                         isSpecialReachSound = true;
                         seImpactFlash.currentTime = 0;
                         seImpactFlash.play().catch(e => console.log(e));
                         elEffect.textContent = "⚡🌈 インパクトフラッシュ発生！！ 🌈⚡";
-
-                    // 2. ST中の「大当り」時、50%でインパクトフラッシュ音
                     } else if (gameMode === "ST" && isWin && Math.random() < 0.50) {
                         isSpecialReachSound = true;
                         seImpactFlash.currentTime = 0;
                         seImpactFlash.play().catch(e => console.log(e));
                         elEffect.textContent = "⚡🌈 インパクトフラッシュ発生！！ 🌈⚡";
-                    
-                    // 3. 時短中の「大当り」時、20%でインパクトフラッシュ音
                     } else if (gameMode === "JITITAN" && isWin && Math.random() < 0.20) {
                         isSpecialReachSound = true;
                         seImpactFlash.currentTime = 0;
                         seImpactFlash.play().catch(e => console.log(e));
                         elEffect.textContent = "⚡🌈 インパクトフラッシュ発生！！ 🌈⚡";
-                    
-                    // 通常のリーチ音
                     } else {
                         seReachNormal.currentTime = 0;
                         seReachNormal.play().catch(e => console.log(e));
@@ -477,12 +463,7 @@
                     }
 
                     let centerStep = 0;
-                    let centerSpinTime = 50;
-                    if (gameMode === "ST") {
-                        centerSpinTime = 25;
-                    } else if (gameMode === "JITITAN") {
-                       centerSpinTime = 15;
-                    }
+                    let centerSpinTime = (gameMode === "ST") ? 25 : (gameMode === "JITITAN" ? 15 : 50);
 
                     const centerInterval = setInterval(() => {
                         centerStep++;
@@ -493,11 +474,12 @@
                             elReel2.textContent = targetCenter;
                             
                             if (isWin) {
-                                // 昇格演出フラグがONの場合は昇格シークエンスへ
-                                if (isUpgrade) {
-                                    startUpgradeSequence(targetCenter);
+                                // 偶数図柄揃いの場合は全ケース再抽選演出へ移行
+                                if (!currentSpinIsOdd || currentSpinIsUpgrade) {
+                                    startUpgradeSequence(targetCenter, currentSpinIsUpgrade);
                                 } else {
-                                    processWinResult(isOddWin, targetCenter);
+                                    // 最初から奇数図柄で揃った場合は昇格演出を行わない
+                                    processWinResult(true, targetCenter);
                                 }
                             } else {
                                 elEffect.textContent = "ハズレ...";
@@ -514,41 +496,42 @@
         }, 50);
     }
 
-    // ★ 昇格スクロール演出の処理関数
-    function startUpgradeSequence(initialNum) {
+// 再抽選（昇格 / 非昇格）演出
+    function startUpgradeSequence(initialNum, isUpgrade) {
         elEffect.textContent = `【${initialNum}揃い】再抽選演出突入...！`;
 
-        // 偶数揃いの「次の奇数図柄」をターゲットにする (例: 2→3, 4→5, 6→7, 8→9)
-        const upgradedNum = (initialNum % 9) + 1;
+        // 昇格する場合は次の奇数図柄、昇格しない場合は最初と同じ偶数図柄
+        const targetNum = isUpgrade ? ((initialNum % 9) + 1) : initialNum;
 
         setTimeout(() => {
             let currentDisplay = initialNum;
             let scrollCount = 0;
-            const totalScrolls = 25; // 全図柄が回るステップ数
+            // 昇格時は1周+1ステップ(10回)、非昇格時はぴったり1周(9回)
+            const totalScrolls = isUpgrade ? 10 : 9;
 
             const upgradeInterval = setInterval(() => {
                 scrollCount++;
                 currentDisplay = (currentDisplay % 9) + 1;
 
-                // 3つの図柄を揃えた状態でゆっくり動かす
+                // 3つの図柄を揃えた状態でゆっくり1個ずつ進める
                 elReel1.textContent = currentDisplay;
                 elReel2.textContent = currentDisplay;
                 elReel3.textContent = currentDisplay;
 
-                if (scrollCount >= totalScrolls && currentDisplay === upgradedNum) {
+                if (scrollCount >= totalScrolls) {
                     clearInterval(upgradeInterval);
 
-                    // インパクトフラッシュ鳴動
-                    seImpactFlash.currentTime = 0;
-                    seImpactFlash.play().catch(e => console.log(e));
-
-                    elEffect.textContent = `⚡🌈【昇格！！】${upgradedNum}揃い昇格！ 🌈⚡`;
-                    
-                    setTimeout(() => {
-                        processWinResult(true, upgradedNum);
-                    }, 1000);
+                    if (isUpgrade) {
+                        seImpactFlash.currentTime = 0;
+                        seImpactFlash.play().catch(e => console.log(e));
+                        elEffect.textContent = `⚡🌈【昇格！！】${targetNum}揃い昇格！ 🌈⚡`;
+                        setTimeout(() => { processWinResult(true, targetNum); }, 1000);
+                    } else {
+                        elEffect.textContent = `【${targetNum}揃い確定】`;
+                        setTimeout(() => { processWinResult(false, targetNum); }, 800);
+                    }
                 }
-            }, 120); // スクロール速度（120ms毎に次の数字へ）
+            }, 350); // ★間隔を 120ms → 350ms に広げて重厚な動きに変更
         }, 1200);
     }
 
@@ -572,7 +555,6 @@
     function recordWinHistory(isOddWin, winNum) {
         totalWinCount++;
 
-        // 大当り時に回転数をリセット
         totalSpins = 0;
         elTotalSpins.textContent = totalSpins;
         
