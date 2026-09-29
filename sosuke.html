@@ -286,57 +286,35 @@
 
 
 <div id="game-container">
-
     <div id="status-bar">
-
         <span id="mode-display" class="mode-normal">
             通常モード
         </span>
-
         <span id="st-count"></span>
-
         <span>
             回転数:
             <span id="total-spins">0</span>
         </span>
-
     </div>
-
 
     <div id="screen">
-
         <div id="reels">
-
             <span id="reel1">1</span>
-
             <span id="reel2">2</span>
-
             <span id="reel3">3</span>
-
         </div>
-
         <div id="effect-text"></div>
-
     </div>
-
 
     <div id="hold-container">
-
         <span>保留:</span>
-
         <div class="hold-ball" id="hold0"></div>
-
         <div class="hold-ball" id="hold1"></div>
-
         <div class="hold-ball" id="hold2"></div>
-
         <div class="hold-ball" id="hold3"></div>
-
     </div>
 
-
     <div id="controls">
-
         <button
             id="shoot-btn"
             onclick="addHold()">
@@ -348,43 +326,34 @@
             onclick="toggleAutoPlay()">
             オート: OFF
         </button>
-
     </div>
 
 
     <!-- デバッグ用ボタンエリア -->
 
     <div id="debug-controls">
-
         <div class="debug-title">
             🛠 デバッグ操作（テスト用大当りボタン）
         </div>
-
         <div
             style="
                 display: flex;
                 gap: 5px;
                 justify-content: center;
-            "
-        >
-
+            ">
             <button
                 onclick="debugTriggerWin('NORMAL_EVEN')">
                 通常: 時短当り
             </button>
-
             <button
                 onclick="debugTriggerWin('NORMAL_ODD')">
                 通常: RUSH当り
             </button>
-
             <button
                 onclick="debugTriggerWin('RIGHT_WIN')">
                 右打ち中大当り
             </button>
-
         </div>
-
     </div>
 
 
@@ -393,50 +362,38 @@
     ========================================= -->
 
     <div id="impact-flash-controls">
-
         <div id="impact-flash-title">
             ⚡ インパクトフラッシュ占有率設定
         </div>
 
-
         <div id="impact-flash-buttons">
-
             <button
                 id="impact-high-btn"
                 onclick="setImpactFlashHigh()">
                 高占有率に変更
             </button>
 
-
             <button
                 id="impact-reset-btn"
                 onclick="resetImpactFlashRates()">
                 元に戻す
             </button>
-
         </div>
-
 
         <div id="impact-rate-display">
             通常 10% / ST 50% / 時短 20%
         </div>
 
-
         <div id="impact-mode-display">
             現在：通常設定
         </div>
-
     </div>
 
-
     <div id="history-box">
-
         <div id="history-title">
-
             <span>
                 大当り履歴
             </span>
-
             <span>
                 通算大当り:
                 <span id="total-wins">0</span>
@@ -445,27 +402,19 @@
                 <span id="max-chain">0</span>
                 連)
             </span>
-
         </div>
 
-
         <ul id="history-list">
-
             <li style="color: #888;">
                 履歴はありません
             </li>
-
         </ul>
-
     </div>
-
 </div>
-
 
 <div id="version-display">
     Ver. 1.9.7
 </div>
-
 
 <script>
 
@@ -480,86 +429,58 @@
     const seImpactFlash =
         new Audio('./sound_01.mp3');
 
-
     // ========================================
     // パラメータ設定
     // ========================================
 
     const RATES = {
-
         NORMAL: 319.7,
-
         ST: 99.4,
-
         ODD_WIN_RATE: 0.59,
-
         ST_TURNS: 163,
-
         JITITAN_TURNS: 100
-
     };
-
 
     // ========================================
     // インパクトフラッシュ占有率
     // ========================================
 
-
     // 元の設定
     const IMPACT_FLASH_DEFAULT = {
-
         NORMAL: 0.10,
-
         ST: 0.50,
-
         JITITAN: 0.20
-
     };
-
 
     // 高占有率設定
     const IMPACT_FLASH_HIGH = {
-
         NORMAL: 0.30,
-
         ST: 0.70,
-
         JITITAN: 0.40
-
     };
 
 
     // 現在使用している設定
 
     let impactFlashRates = {
-
         NORMAL: IMPACT_FLASH_DEFAULT.NORMAL,
-
         ST: IMPACT_FLASH_DEFAULT.ST,
-
         JITITAN: IMPACT_FLASH_DEFAULT.JITITAN
-
     };
-
 
     // ========================================
     // 高占有率へ変更
     // ========================================
 
     function setImpactFlashHigh() {
-
         impactFlashRates.NORMAL =
             IMPACT_FLASH_HIGH.NORMAL;
-
         impactFlashRates.ST =
             IMPACT_FLASH_HIGH.ST;
-
         impactFlashRates.JITITAN =
             IMPACT_FLASH_HIGH.JITITAN;
 
-
         updateImpactFlashDisplay(true);
-
     }
 
 
@@ -568,42 +489,31 @@
     // ========================================
 
     function resetImpactFlashRates() {
-
         impactFlashRates.NORMAL =
             IMPACT_FLASH_DEFAULT.NORMAL;
-
         impactFlashRates.ST =
             IMPACT_FLASH_DEFAULT.ST;
-
         impactFlashRates.JITITAN =
             IMPACT_FLASH_DEFAULT.JITITAN;
 
-
         updateImpactFlashDisplay(false);
-
     }
-
 
     // ========================================
     // インパクトフラッシュ設定表示更新
     // ========================================
-
     function updateImpactFlashDisplay(isHigh) {
-
         const rateDisplay =
             document.getElementById(
                 'impact-rate-display'
             );
-
 
         const modeDisplay =
             document.getElementById(
                 'impact-mode-display'
             );
 
-
         rateDisplay.textContent =
-
             `通常 ${Math.round(
                 impactFlashRates.NORMAL * 100
             )}% / ` +
@@ -616,27 +526,19 @@
                 impactFlashRates.JITITAN * 100
             )}%`;
 
-
         if (isHigh) {
-
             modeDisplay.textContent =
                 "現在：高占有率設定";
-
             modeDisplay.style.color =
                 "#ffcc00";
-
         }
 
         else {
-
             modeDisplay.textContent =
                 "現在：通常設定";
-
             modeDisplay.style.color =
                 "#00ffff";
-
         }
-
     }
 
 
@@ -723,35 +625,22 @@
     // ========================================
 
     let totalSpins = 0;
-
     let spinAtLastWin = 0;
-
     let gameMode =
         "NORMAL";
-
     let modeRemains = 0;
-
     let holds = [];
-
     let isSpinning = false;
 
-
     let isAutoPlay = false;
-
     let autoPlayInterval = null;
 
-
     let winHistory = [];
-
     let currentChain = 0;
-
     let maxChain = 0;
-
     let totalWinCount = 0;
 
-
     let spinStartTime = 0;
-
     let lastSpinDuration = 0;
 
 
@@ -765,60 +654,50 @@
             'reel1'
         );
 
-
     const elReel2 =
         document.getElementById(
             'reel2'
         );
-
 
     const elReel3 =
         document.getElementById(
             'reel3'
         );
 
-
     const elEffect =
         document.getElementById(
             'effect-text'
         );
-
 
     const elMode =
         document.getElementById(
             'mode-display'
         );
 
-
     const elStCount =
         document.getElementById(
             'st-count'
         );
-
 
     const elTotalSpins =
         document.getElementById(
             'total-spins'
         );
 
-
     const elHistoryList =
         document.getElementById(
             'history-list'
         );
-
 
     const elTotalWins =
         document.getElementById(
             'total-wins'
         );
 
-
     const elMaxChain =
         document.getElementById(
             'max-chain'
         );
-
 
     const elAutoBtn =
         document.getElementById(
@@ -833,46 +712,28 @@
 
     function addHold() {
 
-
         if (holds.length >= 4) {
-
             return;
-
         }
 
-
         const currentRate =
-
             (gameMode === "ST")
-
                 ? RATES.ST
-
                 : RATES.NORMAL;
 
-
         const isWin =
-
             Math.random() <
-
             (1 / currentRate);
 
-
         holds.push({
-
             isWin: isWin
-
         });
-
 
         updateHoldUI();
 
-
         if (!isSpinning) {
-
             startNextSpin();
-
         }
-
     }
 
 
@@ -883,60 +744,40 @@
 
     function toggleAutoPlay() {
 
-
         isAutoPlay =
             !isAutoPlay;
 
-
         if (isAutoPlay) {
-
 
             elAutoBtn.textContent =
                 "オート: ON";
-
 
             elAutoBtn.classList.add(
                 'auto-on'
             );
 
-
             autoPlayInterval =
-
                 setInterval(() => {
-
 
                     if (
                         holds.length < 4
                     ) {
-
                         addHold();
-
                     }
 
-
                 }, 300);
-
-
-        }
-
-        else {
-
-
+        }else {
             elAutoBtn.textContent =
                 "オート: OFF";
-
 
             elAutoBtn.classList.remove(
                 'auto-on'
             );
-
-
+            
             clearInterval(
                 autoPlayInterval
             );
-
         }
-
     }
 
 
@@ -947,57 +788,35 @@
 
     function updateHoldUI() {
 
-
         for (
             let i = 0;
             i < 4;
             i++
         ) {
-
-
             const ball =
-
                 document.getElementById(
                     `hold${i}`
                 );
 
-
             ball.className =
                 'hold-ball';
-
-
             if (
                 i < holds.length
             ) {
-
-
                 if (
                     holds[i].isWin &&
                     Math.random() < 0.8
                 ) {
-
-
                     ball.classList.add(
                         'hold-red'
                     );
-
-
-                }
-
-                else {
-
-
+                }else {
                     ball.classList.add(
                         'hold-blue'
                     );
-
-
                 }
-
             }
-
         }
-
     }
 
 
@@ -1008,60 +827,37 @@
 
     function startNextSpin() {
 
-
         if (
             holds.length === 0
         ) {
-
-
             isSpinning = false;
-
             return;
-
         }
-
 
         isSpinning = true;
 
-
         const currentSpinData =
-
             holds.shift();
-
-
         updateHoldUI();
 
-
         totalSpins++;
-
         spinAtLastWin++;
-
 
         elTotalSpins.textContent =
             totalSpins;
-
-
         if (
             gameMode !== "NORMAL"
         ) {
 
-
             modeRemains--;
 
-
             elStCount.textContent =
-
                 `残り: ${modeRemains}回`;
-
         }
 
-
         runSpinAnimation(
-
             currentSpinData.isWin
-
         );
-
     }
 
 
@@ -1072,95 +868,57 @@
 
     function debugTriggerWin(type) {
 
-
         if (isSpinning) {
-
             return;
-
         }
 
-
         totalSpins++;
-
         spinAtLastWin++;
-
 
         elTotalSpins.textContent =
             totalSpins;
-
-
         isSpinning = true;
-
 
         if (
             type === 'NORMAL_EVEN'
         ) {
 
-
             gameMode =
                 "NORMAL";
-
 
             runSpinAnimation(
                 true,
                 false
             );
-
-
-        }
-
-        else if (
+        }else if (
             type === 'NORMAL_ODD'
         ) {
-
 
             gameMode =
                 "NORMAL";
 
-
             runSpinAnimation(
                 true,
                 true
             );
-
-
-        }
-
-        else if (
+        }else if (
             type === 'RIGHT_WIN'
         ) {
-
-
             if (
                 gameMode === "NORMAL"
             ) {
-
-
                 gameMode =
                     "ST";
-
-
                 modeRemains =
                     RATES.ST_TURNS;
-
-
-            }
-
-            else {
-
-
+            }else {
                 modeRemains--;
-
             }
-
-
             runSpinAnimation(
                 true,
                 true
             );
-
         }
-
     }
 
 
@@ -1171,18 +929,11 @@
 
     function getNextNum(current) {
 
-
         let val =
-
             parseInt(current) || 1;
-
-
         return (
-
             val % 9
-
         ) + 1;
-
     }
 
 
@@ -1192,54 +943,36 @@
     // ========================================
 
     function runSpinAnimation(
-
         isWin,
-
         forcedIsOdd = null
-
     ) {
-
-
         elEffect.textContent =
             "";
-
-
         spinStartTime =
             performance.now();
-
 
         // ========================================
         // リーチ発生率
         // ========================================
 
         const reachRate =
-
             (
                 gameMode ===
                 "JITITAN"
             )
-
                 ? 0.03
-
                 : 0.15;
 
-
         const isReach =
-
             isWin ||
-
             (
                 Math.random() <
                 reachRate
             );
 
-
         let targetLeft;
-
         let targetCenter;
-
         let targetRight;
-
 
         let isOddWin =
             false;
@@ -1252,79 +985,42 @@
 
         if (isWin) {
 
-
             if (
                 forcedIsOdd !== null
-            ) {
-
-
+            ){
                 isOddWin =
                     forcedIsOdd;
-
-
-            }
-
-            else if (
-
+            }else if (
                 gameMode === "ST" ||
-
                 gameMode === "JITITAN"
-
-            ) {
-
-
+            ){
                 isOddWin =
                     true;
-
-
-            }
-
-            else {
-
-
+            }else {
                 isOddWin =
-
                     Math.random() <
-
                     RATES.ODD_WIN_RATE;
-
             }
-
 
             const winArray =
-
                 isOddWin
-
                     ? ODD_NUMBERS
-
                     : EVEN_NUMBERS;
 
-
             const winNum =
-
                 winArray[
-
                     Math.floor(
-
                         Math.random() *
-
                         winArray.length
-
                     )
-
                 ];
-
 
             targetLeft =
                 winNum;
-
             targetCenter =
                 winNum;
-
             targetRight =
                 winNum;
-
-
         }
 
 
@@ -1334,37 +1030,23 @@
 
         else if (isReach) {
 
-
             const reachNum =
-
                 ALL_NUMBERS[
-
                     Math.floor(
-
                         Math.random() *
-
                         ALL_NUMBERS.length
-
                     )
-
                 ];
-
 
             targetLeft =
                 reachNum;
 
-
             targetRight =
                 reachNum;
 
-
             targetCenter =
-
                 (reachNum % 9) + 1;
-
-
         }
-
 
         // ========================================
         // 通常ハズレ
@@ -1372,33 +1054,22 @@
 
         else {
 
-
             const pattern =
-
                 FIXED_LOSE_PATTERNS[
-
                     Math.floor(
-
                         Math.random() *
-
                         FIXED_LOSE_PATTERNS.length
-
                     )
-
                 ];
-
 
             targetLeft =
                 pattern[0];
 
-
             targetCenter =
                 pattern[1];
 
-
             targetRight =
                 pattern[2];
-
         }
 
 
@@ -1409,41 +1080,27 @@
 
         let step = 0;
 
-
         const spinTimeLeftRight =
-
             (gameMode === "ST")
-
                 ? 8
-
                 : 15;
-
-
 
         const interval =
 
             setInterval(() => {
-
-
                 step++;
 
-
                 elReel1.textContent =
-
                     getNextNum(
                         elReel1.textContent
                     );
 
-
                 elReel2.textContent =
-
                     getNextNum(
                         elReel2.textContent
                     );
 
-
                 elReel3.textContent =
-
                     getNextNum(
                         elReel3.textContent
                     );
@@ -1457,17 +1114,13 @@
                 if (
                     step >=
                     spinTimeLeftRight
-                ) {
-
-
+                ){
                     clearInterval(
                         interval
                     );
 
-
                     elReel1.textContent =
                         targetLeft;
-
 
                     elReel3.textContent =
                         targetRight;
@@ -1479,17 +1132,12 @@
                     // ========================================
 
                     if (isReach) {
-
-
                         let isSpecialReachSound =
                             false;
-
-
 
                         // ========================================
                         // インパクトフラッシュ判定
                         // ========================================
-
 
                         // ----------------------------------------
                         // 1.
@@ -1498,26 +1146,17 @@
                         // ----------------------------------------
 
                         if (
-
                             gameMode === "NORMAL" &&
-
                             isWin &&
-
                             isOddWin &&
-
                             Math.random() <
                             impactFlashRates.NORMAL
-
-                        ) {
-
-
+                        ){
                             isSpecialReachSound =
                                 true;
 
-
                             seImpactFlash.currentTime =
                                 0;
-
 
                             seImpactFlash
                                 .play()
@@ -1526,14 +1165,11 @@
                                         console.log(e)
                                 );
 
-
                             elEffect.textContent =
 
                                 "⚡🌈 インパクトフラッシュ発生！！ 🌈⚡";
 
-
                         }
-
 
                         // ----------------------------------------
                         // 2.
@@ -1541,24 +1177,16 @@
                         // ----------------------------------------
 
                         else if (
-
                             gameMode === "ST" &&
-
                             isWin &&
-
                             Math.random() <
                             impactFlashRates.ST
-
-                        ) {
-
-
+                        ){
                             isSpecialReachSound =
                                 true;
 
-
                             seImpactFlash.currentTime =
                                 0;
-
 
                             seImpactFlash
                                 .play()
@@ -1567,14 +1195,9 @@
                                         console.log(e)
                                 );
 
-
                             elEffect.textContent =
-
                                 "⚡🌈 インパクトフラッシュ発生！！ 🌈⚡";
-
-
                         }
-
 
                         // ----------------------------------------
                         // 3.
@@ -1584,22 +1207,15 @@
                         else if (
 
                             gameMode === "JITITAN" &&
-
                             isWin &&
-
                             Math.random() <
                             impactFlashRates.JITITAN
-
-                        ) {
-
-
+                        ){
                             isSpecialReachSound =
                                 true;
 
-
                             seImpactFlash.currentTime =
                                 0;
-
 
                             seImpactFlash
                                 .play()
@@ -1608,25 +1224,17 @@
                                         console.log(e)
                                 );
 
-
                             elEffect.textContent =
-
                                 "⚡🌈 インパクトフラッシュ発生！！ 🌈⚡";
-
-
                         }
-
 
                         // ========================================
                         // 通常のリーチ音
                         // ========================================
 
                         else {
-
-
                             seReachNormal.currentTime =
                                 0;
-
 
                             seReachNormal
                                 .play()
@@ -1635,11 +1243,8 @@
                                         console.log(e)
                                 );
 
-
                             elEffect.textContent =
-
                                 "🔥 リーチ！！ 🔥";
-
                         }
 
 
@@ -1651,7 +1256,6 @@
                         let centerStep =
                             0;
 
-
                         // 通常時50
                         // ST25
                         // 時短15
@@ -1659,45 +1263,27 @@
                         let centerSpinTime =
                             50;
 
-
                         if (
                             gameMode === "ST"
-                        ) {
-
-
+                        ){
                             centerSpinTime =
                                 25;
-
-
-                        }
-
-                        else if (
+                        }else if (
                             gameMode ===
                             "JITITAN"
-                        ) {
-
-
+                        ){
                             centerSpinTime =
                                 15;
-
                         }
-
-
 
                         const centerInterval =
 
                             setInterval(() => {
-
-
                                 centerStep++;
 
-
                                 elReel2.textContent =
-
                                     getNextNum(
-
                                         elReel2.textContent
-
                                     );
 
 
@@ -1709,21 +1295,13 @@
                                 if (
 
                                     centerStep >=
-
                                     centerSpinTime
-
-                                ) {
-
-
+                                ){
                                     clearInterval(
-
                                         centerInterval
-
                                     );
 
-
                                     elReel2.textContent =
-
                                         targetCenter;
 
 
@@ -1734,13 +1312,9 @@
 
                                     if (isWin) {
 
-
                                         recordWinHistory(
-
                                             isOddWin,
-
                                             targetCenter
-
                                         );
 
 
@@ -1751,24 +1325,15 @@
 
                                         if (
                                             isOddWin
-                                        ) {
-
-
+                                        ){
                                             elEffect.textContent =
-
                                                 `【${targetCenter}揃い】ST「インパクトモード」突入！`;
-
-
                                             gameMode =
                                                 "ST";
-
-
                                             modeRemains =
-
                                                 RATES.ST_TURNS;
-
-
                                         }
+
 
 
                                         // ========================================
@@ -1777,23 +1342,13 @@
 
                                         else {
 
-
                                             elEffect.textContent =
-
                                                 `【${targetCenter}揃い】「チャンスタイム(時短100回)」突入`;
-
-
                                             gameMode =
                                                 "JITITAN";
-
-
                                             modeRemains =
-
                                                 RATES.JITITAN_TURNS;
-
                                         }
-
-
                                     }
 
 
@@ -1803,23 +1358,12 @@
 
                                     else {
 
-
                                         elEffect.textContent =
-
                                             "ハズレ...";
-
                                     }
-
-
                                     finishSpin();
-
                                 }
-
-
                             }, 60);
-
-
-
                     }
 
 
@@ -1829,20 +1373,13 @@
 
                     else {
 
-
                         elReel2.textContent =
                             targetCenter;
 
-
                         finishSpin();
-
                     }
-
                 }
-
-
             }, 50);
-
     }
 
 
@@ -1854,12 +1391,8 @@
     function recordWinHistory(
 
         isOddWin,
-
         winNum
-
-    ) {
-
-
+    ){
         totalWinCount++;
 
 
@@ -1869,16 +1402,11 @@
         totalSpins =
             0;
 
-
         elTotalSpins.textContent =
             totalSpins;
 
-
-
         let typeName =
             "";
-
-
         let cssClass =
             "";
 
@@ -1890,21 +1418,12 @@
 
         if (
             gameMode === "ST"
-        ) {
-
-
+        ){
             currentChain++;
-
-
             typeName =
-
                 `${currentChain}連目 (ST中)`;
-
-
             cssClass =
                 "tag-st";
-
-
         }
 
 
@@ -1914,21 +1433,13 @@
 
         else if (
             gameMode === "JITITAN"
-        ) {
-
+        ){
 
             currentChain++;
-
-
             typeName =
-
                 `${currentChain}連目 (引き戻し)`;
-
-
             cssClass =
                 "tag-st";
-
-
         }
 
 
@@ -1938,40 +1449,19 @@
 
         else {
 
-
             currentChain =
                 1;
-
-
             if (isOddWin) {
-
-
                 typeName =
-
                     "初当り (RUSH突入)";
-
-
                 cssClass =
-
                     "tag-st";
-
-
-            }
-
-            else {
-
-
+            }else {
                 typeName =
-
                     "初当り (時短突入)";
-
-
                 cssClass =
-
                     "tag-jititan";
-
             }
-
         }
 
 
@@ -1983,12 +1473,10 @@
         if (
             currentChain >
             maxChain
-        ) {
-
+        ){
 
             maxChain =
                 currentChain;
-
         }
 
 
@@ -1998,38 +1486,23 @@
         // ========================================
 
         winHistory.unshift({
-
-
             count:
                 totalWinCount,
-
-
             spins:
                 spinAtLastWin,
-
-
             num:
                 winNum,
-
-
             type:
                 typeName,
-
-
             css:
                 cssClass
-
-
         });
 
 
 
         spinAtLastWin =
             0;
-
-
         updateHistoryUI();
-
     }
 
 
@@ -2039,24 +1512,15 @@
     // ========================================
 
     function updateHistoryUI() {
-
-
         elTotalWins.textContent =
             totalWinCount;
-
-
         elMaxChain.textContent =
             maxChain;
-
-
         elHistoryList.innerHTML =
             "";
-
-
         winHistory
             .slice(0, 10)
             .forEach(item => {
-
 
                 const li =
 
@@ -2064,42 +1528,24 @@
                         'li'
                     );
 
-
                 li.innerHTML = `
-
                     <span>
-
                         <b class="${item.css}">
-
                             ${item.type}
-
                         </b>
-
                         (${item.num}図柄)
-
                     </span>
-
 
                     <span>
-
                         <b>
-
                             ${item.spins}
-
                         </b>
-
                         回転目
-
                     </span>
-
                 `;
-
-
                 elHistoryList
                     .appendChild(li);
-
             });
-
     }
 
 
@@ -2110,40 +1556,28 @@
 
     function finishSpin() {
 
-
         // ========================================
         // ST / 時短終了
         // ========================================
 
         if (
-
             gameMode !== "NORMAL" &&
-
             modeRemains <= 0
-
-        ) {
-
-
+        ){
             elEffect.textContent =
-
                 `${
                     gameMode === "ST"
                         ? "ST"
                         : "時短"
                 }終了...`;
-
-
             gameMode =
                 "NORMAL";
-
 
             modeRemains =
                 0;
 
-
             currentChain =
                 0;
-
         }
 
 
@@ -2154,29 +1588,19 @@
 
         if (
             spinStartTime > 0
-        ) {
-
-
+        ){
             lastSpinDuration =
-
                 Math.round(
-
                     performance.now() -
-
                     spinStartTime
-
                 );
 
-
             console.log(
-
                 `[変動時間] ${lastSpinDuration}ms (${(
                     lastSpinDuration /
                     1000
                 ).toFixed(2)}秒)`
-
             );
-
         }
 
 
@@ -2187,66 +1611,40 @@
 
         if (
             gameMode === "ST"
-        ) {
-
+        ){
 
             elMode.textContent =
-
                 "インパクトモード (ST)";
 
-
             elMode.className =
-
                 "mode-st";
 
-
             elStCount.textContent =
-
                 `ST残り: ${modeRemains}回`;
-
-
         }
-
 
         else if (
             gameMode === "JITITAN"
-        ) {
-
+        ){
 
             elMode.textContent =
-
                 "チャンスタイム (時短)";
 
-
             elMode.className =
-
                 "mode-jititan";
 
-
             elStCount.textContent =
-
                 `時短残り: ${modeRemains}回`;
-
-
-        }
-
-
-        else {
-
+        }else {
 
             elMode.textContent =
-
                 "通常モード";
 
-
             elMode.className =
-
                 "mode-normal";
-
 
             elStCount.textContent =
                 "";
-
         }
 
 
@@ -2256,13 +1654,8 @@
         // ========================================
 
         setTimeout(() => {
-
-
             startNextSpin();
-
-
         }, 800);
-
     }
 
 
@@ -2272,60 +1665,39 @@
     // ========================================
 
     window.addEventListener(
-
         'keydown',
-
         (e) => {
-
 
             if (
                 e.code === 'Space'
-            ) {
-
+            ){
 
                 if (
-
                     e.target.tagName ===
                     'INPUT' ||
-
                     e.target.tagName ===
                     'TEXTAREA'
-
-                ) {
-
+                ){
                     return;
-
                 }
-
 
                 e.preventDefault();
 
-
                 if (
                     lastSpinDuration > 0
-                ) {
-
-
+                ){
                     console.log(
-
                         `[手動確認 - 直前の変動時間] ${lastSpinDuration}ms (${(
                             lastSpinDuration /
                             1000
                         ).toFixed(2)}秒)`
-
                     );
-
                 }
-
             }
-
         }
-
     );
 
-
 </script>
-
 
 </body>
 
