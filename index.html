@@ -200,6 +200,7 @@
         <div style="display: flex; gap: 5px; justify-content: center;">
             <button onclick="debugTriggerWin('NORMAL_EVEN')">通常: 時短当り</button>
             <button onclick="debugTriggerWin('NORMAL_ODD')">通常: RUSH当り</button>
+            <button onclick="debugTriggerWin('NORMAL_UPGRADE')">通常: 昇格当り(再抽選成功)</button>
             <button onclick="debugTriggerWin('RIGHT_WIN')">右打ち中大当り</button>
         </div>
     </div>
@@ -354,10 +355,13 @@
 
         if (type === 'NORMAL_EVEN') {
             gameMode = "NORMAL";
-            runSpinAnimation(true, false);
+            runSpinAnimation(true, false,false);
         } else if (type === 'NORMAL_ODD') {
             gameMode = "NORMAL";
-            runSpinAnimation(true, true);
+            runSpinAnimation(true, true,false);
+        } else if (type === 'NORMAL_UPGRADE') {
+            gameMode = "NORMAL";
+            runSpinAnimation(true, true, true);
         } else if (type === 'RIGHT_WIN') {
             if (gameMode === "NORMAL") {
                 gameMode = "ST";
@@ -365,7 +369,7 @@
             } else {
                 modeRemains--;
             }
-            runSpinAnimation(true, true);
+            runSpinAnimation(true, true,false);
         }
     }
 
