@@ -197,9 +197,9 @@
     <!-- デバッグ用ボタンエリア -->
     <div id="debug-controls">
         <div class="debug-title">🛠 デバッグ操作（テスト用大当りボタン）</div>
-        <div style="display: flex; gap: 5px; justify-content: center;">
-            <button onclick="debugTriggerWin('NORMAL_EVEN')">通常: 時短当り</button>
-            <button onclick="debugTriggerWin('NORMAL_ODD')">通常: RUSH当り</button>
+        <div style="display: flex; gap: 5px; justify-content: center; flex-wrap: wrap;">
+            <button onclick="debugTriggerWin('NORMAL_EVEN')">通常: 時短当り(再抽選失敗)</button>
+            <button onclick="debugTriggerWin('NORMAL_ODD')">通常: RUSH直当り</button>
             <button onclick="debugTriggerWin('NORMAL_UPGRADE')">通常: 昇格当り(再抽選成功)</button>
             <button onclick="debugTriggerWin('RIGHT_WIN')">右打ち中大当り</button>
         </div>
@@ -216,7 +216,7 @@
     </div>
 </div>
 
-<div id="version-display">Ver. 1.9.7</div>
+<div id="version-display">Ver. 2.1.1</div>
 
 <script>
     // 音声ファイルの指定
@@ -355,10 +355,10 @@
 
         if (type === 'NORMAL_EVEN') {
             gameMode = "NORMAL";
-            runSpinAnimation(true, false,false);
+            runSpinAnimation(true, false, false);
         } else if (type === 'NORMAL_ODD') {
             gameMode = "NORMAL";
-            runSpinAnimation(true, true,false);
+            runSpinAnimation(true, true, false);
         } else if (type === 'NORMAL_UPGRADE') {
             gameMode = "NORMAL";
             runSpinAnimation(true, true, true);
@@ -369,7 +369,7 @@
             } else {
                 modeRemains--;
             }
-            runSpinAnimation(true, true,false);
+            runSpinAnimation(true, true, false);
         }
     }
 
@@ -378,7 +378,7 @@
         return (val % 9) + 1;
     }
 
-function runSpinAnimation(isWin, forcedIsOdd = null, forcedUpgrade = null) {
+    function runSpinAnimation(isWin, forcedIsOdd = null, forcedUpgrade = null) {
         elEffect.textContent = "";
         spinStartTime = performance.now();
 
@@ -396,14 +396,12 @@ function runSpinAnimation(isWin, forcedIsOdd = null, forcedUpgrade = null) {
                 currentSpinIsOdd = Math.random() < RATES.ODD_WIN_RATE;
             }
 
-            // 通常時の奇数当り時に15%で昇格フラグを立てる
             if (gameMode === "NORMAL" && currentSpinIsOdd) {
                 currentSpinIsUpgrade = (forcedUpgrade !== null) ? forcedUpgrade : (Math.random() < RATES.UPGRADE_RATE);
             } else {
                 currentSpinIsUpgrade = false;
             }
 
-            // 偶数当り・昇格当りは偶数図柄(2,4,6,8)をセット。直撃奇数当りのみ奇数図柄(1,3,5,7,9)
             const winArray = (currentSpinIsOdd && !currentSpinIsUpgrade) ? ODD_NUMBERS : EVEN_NUMBERS;
             const winNum = winArray[Math.floor(Math.random() * winArray.length)];
             
@@ -439,28 +437,21 @@ function runSpinAnimation(isWin, forcedIsOdd = null, forcedUpgrade = null) {
                 if (isReach) {
                     let isSpecialReachSound = false;
 
-                    // 1. 通常時の「奇数図柄大当り」時、10%でインパクトフラッシュ音
-                    if (gameMode === "NORMAL" && isWin && isOddWin && Math.random() < 0.10) {
+                    if (gameMode === "NORMAL" && isWin && currentSpinIsOdd && !currentSpinIsUpgrade && Math.random() < 0.10) {
                         isSpecialReachSound = true;
                         seImpactFlash.currentTime = 0;
                         seImpactFlash.play().catch(e => console.log(e));
                         elEffect.textContent = "⚡🌈 インパクトフラッシュ発生！！ 🌈⚡";
-
-                    // 2. ST中の「大当り」時、50%でインパクトフラッシュ音
                     } else if (gameMode === "ST" && isWin && Math.random() < 0.50) {
                         isSpecialReachSound = true;
                         seImpactFlash.currentTime = 0;
                         seImpactFlash.play().catch(e => console.log(e));
                         elEffect.textContent = "⚡🌈 インパクトフラッシュ発生！！ 🌈⚡";
-                    
-                    // 3. 時短中の「大当り」時、20%でインパクトフラッシュ音
                     } else if (gameMode === "JITITAN" && isWin && Math.random() < 0.20) {
                         isSpecialReachSound = true;
                         seImpactFlash.currentTime = 0;
                         seImpactFlash.play().catch(e => console.log(e));
                         elEffect.textContent = "⚡🌈 インパクトフラッシュ発生！！ 🌈⚡";
-                    
-                    // 通常のリーチ音
                     } else {
                         seReachNormal.currentTime = 0;
                         seReachNormal.play().catch(e => console.log(e));
@@ -468,13 +459,7 @@ function runSpinAnimation(isWin, forcedIsOdd = null, forcedUpgrade = null) {
                     }
 
                     let centerStep = 0;
-                    // ★ モード毎のリーチ演出時間を調整（通常時:50, ST時:25, 時短時:15）
-                    let centerSpinTime = 50;
-                    if (gameMode === "ST") {
-                        centerSpinTime = 25;
-                    } else if (gameMode === "JITITAN") {
-                       centerSpinTime = 15; // 時短中は短縮
-                    }
+                    let centerSpinTime = (gameMode === "ST") ? 25 : (gameMode === "JITITAN" ? 15 : 50);
 
                     const centerInterval = setInterval(() => {
                         centerStep++;
@@ -485,11 +470,9 @@ function runSpinAnimation(isWin, forcedIsOdd = null, forcedUpgrade = null) {
                             elReel2.textContent = targetCenter;
                             
                             if (isWin) {
-                                // 偶数図柄揃いの場合は全ケース再抽選演出へ移行
                                 if (!currentSpinIsOdd || currentSpinIsUpgrade) {
                                     startUpgradeSequence(targetCenter, currentSpinIsUpgrade);
                                 } else {
-                                    // 最初から奇数図柄で揃った場合は昇格演出を行わない
                                     processWinResult(true, targetCenter);
                                 }
                             } else {
@@ -511,20 +494,17 @@ function runSpinAnimation(isWin, forcedIsOdd = null, forcedUpgrade = null) {
     function startUpgradeSequence(initialNum, isUpgrade) {
         elEffect.textContent = `【${initialNum}揃い】再抽選演出突入...！`;
 
-        // 昇格する場合は次の奇数図柄、昇格しない場合は最初と同じ偶数図柄
         const targetNum = isUpgrade ? ((initialNum % 9) + 1) : initialNum;
 
         setTimeout(() => {
             let currentDisplay = initialNum;
             let scrollCount = 0;
-            // 昇格時は1周+1ステップ(10回)、非昇格時はぴったり1周(9回)
             const totalScrolls = isUpgrade ? 10 : 9;
 
             const upgradeInterval = setInterval(() => {
                 scrollCount++;
                 currentDisplay = (currentDisplay % 9) + 1;
 
-                // 3つの図柄を揃えた状態でゆっくり1個ずつ進める
                 elReel1.textContent = currentDisplay;
                 elReel2.textContent = currentDisplay;
                 elReel3.textContent = currentDisplay;
@@ -542,9 +522,11 @@ function runSpinAnimation(isWin, forcedIsOdd = null, forcedUpgrade = null) {
                         setTimeout(() => { processWinResult(false, targetNum); }, 800);
                     }
                 }
-            }, 550); // ★間隔を 120ms → 350ms に広げて重厚な動きに変更
+            }, 350);
         }, 1200);
-            // ★追加: 大当り確定後の処理（ST or 時短へ遷移）
+    }
+
+    // 大当り確定後の処理（ST or 時短へ遷移）
     function processWinResult(isOddWin, winNum) {
         recordWinHistory(isOddWin, winNum);
 
@@ -560,12 +542,10 @@ function runSpinAnimation(isWin, forcedIsOdd = null, forcedUpgrade = null) {
 
         finishSpin();
     }
-    }
 
     function recordWinHistory(isOddWin, winNum) {
         totalWinCount++;
 
-        // 大当り時に回転数をリセット
         totalSpins = 0;
         elTotalSpins.textContent = totalSpins;
         
@@ -631,8 +611,9 @@ function runSpinAnimation(isWin, forcedIsOdd = null, forcedUpgrade = null) {
         }
 
         if (spinStartTime > 0) {
-        lastSpinDuration = Math.round(performance.now() - spinStartTime);
-        console.log(`[変動時間] ${lastSpinDuration}ms (${(lastSpinDuration / 1000).toFixed(2)}秒)`);
+            lastSpinDuration = Math.round(performance.now() - spinStartTime);
+            console.log(`[変動時間] ${lastSpinDuration}ms (${(lastSpinDuration / 1000).toFixed(2)}秒)`);
+        }
 
         if (gameMode === "ST") {
             elMode.textContent = "インパクトモード (ST)";
@@ -652,17 +633,17 @@ function runSpinAnimation(isWin, forcedIsOdd = null, forcedUpgrade = null) {
             startNextSpin();
         }, 800);
     }
+
     window.addEventListener('keydown', (e) => {
-    if (e.code === 'Space') {
-        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-        e.preventDefault();
+        if (e.code === 'Space') {
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+            e.preventDefault();
 
-        if (lastSpinDuration > 0) {
-            console.log(`[手動確認 - 直前の変動時間] ${lastSpinDuration}ms (${(lastSpinDuration / 1000).toFixed(2)}秒)`);
+            if (lastSpinDuration > 0) {
+                console.log(`[手動確認 - 直前の変動時間] ${lastSpinDuration}ms (${(lastSpinDuration / 1000).toFixed(2)}秒)`);
+            }
         }
-    }
-})};
-
+    });
 </script>
 
 </body>
