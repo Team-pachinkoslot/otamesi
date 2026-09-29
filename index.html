@@ -227,6 +227,7 @@
         NORMAL: 319.7,      
         ST: 99.4,           
         ODD_WIN_RATE: 0.59, 
+        UPGRADE_RATE: 0.15,
         ST_TURNS: 163,      
         JITITAN_TURNS: 100  
     };
@@ -257,6 +258,9 @@
 
     let spinStartTime = 0;
     let lastSpinDuration = 0;
+
+    let currentSpinIsUpgrade = false;
+    let currentSpinIsOdd = false;
 
     const elReel1 = document.getElementById('reel1');
     const elReel2 = document.getElementById('reel2');
@@ -382,32 +386,30 @@
         let targetLeft, targetCenter, targetRight;
         let isOddWin = false;
 
-        if (isWin) {
-            if (forcedIsOdd !== null) {
-                isOddWin = forcedIsOdd;
-            } else if (gameMode === "ST" || gameMode === "JITITAN") {
-                isOddWin = true;
-            } else {
-                isOddWin = Math.random() < RATES.ODD_WIN_RATE;
-            }
+            if (isWin) {
+                if (forcedIsOdd !== null) {
+                    currentSpinIsOdd = forcedIsOdd;
+                } else if (gameMode === "ST" || gameMode === "JITITAN") {
+                    currentSpinIsOdd = true;
+                } else {
+                    currentSpinIsOdd = Math.random() < RATES.ODD_WIN_RATE;
+                }
 
-            const winArray = isOddWin ? ODD_NUMBERS : EVEN_NUMBERS;
-            const winNum = winArray[Math.floor(Math.random() * winArray.length)];
+            // 通常時の奇数当り時に15%で昇格フラグを立てる
+                if (gameMode === "NORMAL" && currentSpinIsOdd) {
+                    currentSpinIsUpgrade = (forcedUpgrade !== null) ? forcedUpgrade : (Math.random() < RATES.UPGRADE_RATE);
+                } else {
+                    currentSpinIsUpgrade = false;
+                }
+
+            // 偶数当り・昇格当りは偶数図柄(2,4,6,8)をセット。直撃奇数当りのみ奇数図柄(1,3,5,7,9)
+                const winArray = (currentSpinIsOdd && !currentSpinIsUpgrade) ? ODD_NUMBERS : EVEN_NUMBERS;
+                const winNum = winArray[Math.floor(Math.random() * winArray.length)];
             
-            targetLeft = winNum;
-            targetCenter = winNum;
-            targetRight = winNum;
-        } else if (isReach) {
-            const reachNum = ALL_NUMBERS[Math.floor(Math.random() * ALL_NUMBERS.length)];
-            targetLeft = reachNum;
-            targetRight = reachNum;
-            targetCenter = (reachNum % 9) + 1;
-        } else {
-            const pattern = FIXED_LOSE_PATTERNS[Math.floor(Math.random() * FIXED_LOSE_PATTERNS.length)];
-            targetLeft = pattern[0];
-            targetCenter = pattern[1];
-            targetRight = pattern[2];
-        }
+                targetLeft = winNum;
+                targetCenter = winNum;
+                targetRight = winNum;
+            }
 
         let step = 0;
         const spinTimeLeftRight = (gameMode === "ST") ? 8 : 15;
