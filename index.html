@@ -635,6 +635,23 @@
         }
     }
 })};
+
+    // ★追加: 大当り確定後の処理（ST or 時短へ遷移）
+    function processWinResult(isOddWin, winNum) {
+        recordWinHistory(isOddWin, winNum);
+
+        if (isOddWin) {
+            elEffect.textContent = `【${winNum}揃い】ST「インパクトモード」突入！`;
+            gameMode = "ST";
+            modeRemains = RATES.ST_TURNS;
+        } else {
+            elEffect.textContent = `【${winNum}揃い】「チャンスタイム(時短100回)」突入`;
+            gameMode = "JITITAN";
+            modeRemains = RATES.JITITAN_TURNS;
+        }
+
+        finishSpin();
+    }
 </script>
 
 </body>
