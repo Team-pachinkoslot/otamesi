@@ -330,7 +330,7 @@
 
 </div>
 
-<div id="version-display">Ver. 2.2.0</div>
+<div id="version-display">Ver. 2.2.1</div>
 
 <script>
 
@@ -837,9 +837,9 @@
         let step = 0;
 
         const spinTimeLeftRight =
-            (gameMode === "ST")
-                ? 8
-                : 15;
+            (gameMode === "ST") ? 12 :
+            (gameMode === "JITITAN") ? 5:
+            15;
 
 
         const interval =
@@ -1455,45 +1455,16 @@
             startNextSpin();
 
         }, 800);
-    }
 
+    const nextSpinWait = 
+            (gameMode === "ST") ? 400 :        // ST中：200ms
+            (gameMode === "JITITAN") ? 200 :   // 時短中：少し早い（400ms）
+            800;                               // 通常時：800ms
 
-    // ==============================
-    // スペースキー
-    // ==============================
-
-    window.addEventListener(
-        'keydown',
-        (e) => {
-
-            if (e.code === 'Space') {
-
-                if (
-                    e.target.tagName ===
-                    'INPUT' ||
-
-                    e.target.tagName ===
-                    'TEXTAREA'
-                ) {
-                    return;
-                }
-
-                e.preventDefault();
-
-                if (
-                    lastSpinDuration > 0
-                ) {
-
-                    console.log(
-                        `[手動確認 - 直前の変動時間] ${lastSpinDuration}ms (${(
-                            lastSpinDuration /
-                            1000
-                        ).toFixed(2)}秒)`
-                    );
-                }
-            }
-        }
-    );
+        setTimeout(() => {
+            startNextSpin();
+        }, nextSpinWait);
+    };
 
 </script>
 
