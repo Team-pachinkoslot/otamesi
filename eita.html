@@ -561,7 +561,10 @@
         elEffect.textContent = "";
         spinStartTime = performance.now();
 
-        const reachRate = (gameMode === "JITITAN") ? 0.03 : 0.15;
+        const reachRate = (gameMode === "ST") ? 0.05 :
+        (gameMode === "JITITAN"
+            ? 0.01
+            : 0.15);
         const isReach = isWin || (Math.random() < reachRate);
 
         let targetLeft, targetCenter, targetRight;

@@ -716,10 +716,11 @@
             performance.now();
 
 
-        const reachRate =
-            (gameMode === "JITITAN")
-                ? 0.03
-                : 0.15;
+        const reachRate = (gameMode === "ST")
+                ? 0.05
+                :(gameMode === "JITITAN"
+                ? 0.01
+                : 0.10);
 
         const isReach =
             isWin ||
