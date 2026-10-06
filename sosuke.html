@@ -360,6 +360,7 @@
     let lastSpinDuration = 0;
     let currentSpinIsUpgrade = false;
     let currentSpinIsOdd = false;
+    let currentSpinLowHold = false; // 変動開始後の残り保留が0～1個なら約2秒延長
     // HTML要素
     const elReel1 = document.getElementById('reel1');
     const elReel2 = document.getElementById('reel2');
@@ -421,6 +422,7 @@
         }
         isSpinning = true;
         const currentSpinData = holds.shift();
+        currentSpinLowHold = holds.length <= 1;
         currentSpinHoldColor = currentSpinData.color;
         // 液晶枠を発光
         elScreen.className = `active-${currentSpinHoldColor}`;
@@ -494,7 +496,7 @@
             [targetLeft, targetCenter, targetRight] = pattern;
         }
         let step = 0;
-        const spinTimeLeftRight = (gameMode === "ST") ? 8 : 15;
+        const spinTimeLeftRight = ((gameMode === "ST") ? 8 : 15) + (currentSpinLowHold ? 40 : 0);
         const interval = setInterval(() => {
             step++;
             elReel1.textContent = getNextNum(elReel1.textContent);
