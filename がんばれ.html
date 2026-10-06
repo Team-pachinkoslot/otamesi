@@ -524,3 +524,945 @@
 
     // ==============================
     // オート
+    // ==============================
+
+    function toggleAutoPlay() {
+
+        isAutoPlay = !isAutoPlay;
+
+        if (isAutoPlay) {
+
+            elAutoBtn.textContent = "オート: ON";
+            elAutoBtn.classList.add('auto-on');
+
+            autoPlayInterval = setInterval(() => {
+
+                if (holds.length < 4) {
+                    addHold();
+                }
+
+            }, 300);
+
+        } else {
+
+            elAutoBtn.textContent = "オート: OFF";
+            elAutoBtn.classList.remove('auto-on');
+
+            clearInterval(autoPlayInterval);
+        }
+    }
+
+
+    // ==============================
+    // 保留UI
+    // ==============================
+
+    function updateHoldUI() {
+
+        for (let i = 0; i < 4; i++) {
+
+            const ball =
+                document.getElementById(`hold${i}`);
+
+            ball.className = 'hold-ball';
+
+            if (i < holds.length) {
+
+                if (
+                    holds[i].isWin &&
+                    Math.random() < 0.8
+                ) {
+                    ball.classList.add('hold-red');
+                } else {
+                    ball.classList.add('hold-blue');
+                }
+            }
+        }
+    }
+
+
+    // ==============================
+    // 次変動
+    // ==============================
+
+    function startNextSpin() {
+
+        if (holds.length === 0) {
+
+            isSpinning = false;
+            return;
+        }
+
+        isSpinning = true;
+
+        const currentSpinData =
+            holds.shift();
+
+        updateHoldUI();
+
+        totalSpins++;
+        spinAtLastWin++;
+
+        elTotalSpins.textContent =
+            totalSpins;
+
+        if (gameMode !== "NORMAL") {
+
+            modeRemains--;
+
+            elStCount.textContent =
+                `残り: ${modeRemains}回`;
+        }
+
+        runSpinAnimation(
+            currentSpinData.isWin
+        );
+    }
+
+
+    // ==============================
+    // デバッグ
+    // ==============================
+
+    function debugTriggerWin(type) {
+
+        if (isSpinning) return;
+
+        totalSpins++;
+        spinAtLastWin++;
+
+        elTotalSpins.textContent =
+            totalSpins;
+
+        isSpinning = true;
+
+
+        if (type === 'NORMAL_EVEN') {
+
+            runSpinAnimation(
+                true,
+                false,
+                false
+            );
+
+        } else if (type === 'NORMAL_ODD') {
+
+            runSpinAnimation(
+                true,
+                true,
+                false
+            );
+
+        } else if (type === 'NORMAL_UPGRADE') {
+
+            runSpinAnimation(
+                true,
+                true,
+                true
+            );
+
+        } else if (type === 'RIGHT_WIN') {
+
+            if (gameMode !== "NORMAL") {
+                modeRemains--;
+            }
+
+            runSpinAnimation(
+                true,
+                true,
+                false
+            );
+        }
+    }
+
+
+    // ==============================
+    // 次図柄
+    // ==============================
+
+    function getNextNum(current) {
+
+        let val =
+            parseInt(current) || 1;
+
+        return (val % 9) + 1;
+    }
+
+
+    // ==============================
+    // 変動
+    // ==============================
+
+    function runSpinAnimation(
+        isWin,
+        forcedIsOdd = null,
+        forcedUpgrade = null
+    ) {
+
+        elEffect.textContent = "";
+
+        spinStartTime =
+            performance.now();
+
+
+        const reachRate =
+            (gameMode === "JITITAN")
+                ? 0.03
+                : 0.15;
+
+        const isReach =
+            isWin ||
+            (Math.random() < reachRate);
+
+
+        let targetLeft;
+        let targetCenter;
+        let targetRight;
+
+
+        if (isWin) {
+
+            if (forcedIsOdd !== null) {
+
+                currentSpinIsOdd =
+                    forcedIsOdd;
+
+                currentSpinIsUpgrade =
+                    (forcedUpgrade !== null)
+                        ? forcedUpgrade
+                        : false;
+
+            } else if (
+                gameMode === "ST" ||
+                gameMode === "JITITAN"
+            ) {
+
+                currentSpinIsOdd = true;
+                currentSpinIsUpgrade = false;
+
+            } else {
+
+                // 通常時：まず全体から59%の確率で確変(RUSH)当選かを決定
+                const isRushWin =
+                    Math.random() < RATES.ODD_WIN_RATE;
+
+                if (isRushWin) {
+                    currentSpinIsOdd = true;
+
+                    // 確変当選のうち一定割合で「偶数揃いからの昇格演出」を経由
+                    currentSpinIsUpgrade =
+                        Math.random() < RATES.UPGRADE_RATE;
+
+                } else {
+                    currentSpinIsOdd = false;
+                    currentSpinIsUpgrade = false;
+                }
+            }
+
+
+            // 昇格演出が発生する場合は、最初にビタ止まりする図柄を「偶数」にする
+            const winArray =
+                (
+                    currentSpinIsOdd &&
+                    !currentSpinIsUpgrade
+                )
+                    ? ODD_NUMBERS
+                    : EVEN_NUMBERS;
+
+
+            const winNum =
+                winArray[
+                    Math.floor(
+                        Math.random() *
+                        winArray.length
+                    )
+                ];
+
+
+            targetLeft = winNum;
+            targetCenter = winNum;
+            targetRight = winNum;
+
+
+        } else if (isReach) {
+
+            const reachNum =
+                ALL_NUMBERS[
+                    Math.floor(
+                        Math.random() *
+                        ALL_NUMBERS.length
+                    )
+                ];
+
+            targetLeft = reachNum;
+            targetRight = reachNum;
+
+            targetCenter =
+                (reachNum % 9) + 1;
+
+        } else {
+
+            const pattern =
+                FIXED_LOSE_PATTERNS[
+                    Math.floor(
+                        Math.random() *
+                        FIXED_LOSE_PATTERNS.length
+                    )
+                ];
+
+            targetLeft = pattern[0];
+            targetCenter = pattern[1];
+            targetRight = pattern[2];
+        }
+
+
+        let step = 0;
+
+        const spinTimeLeftRight =
+            (gameMode === "ST")
+                ? 8
+                : 15;
+
+
+        const interval =
+            setInterval(() => {
+
+                step++;
+
+                elReel1.textContent =
+                    getNextNum(
+                        elReel1.textContent
+                    );
+
+                elReel2.textContent =
+                    getNextNum(
+                        elReel2.textContent
+                    );
+
+                elReel3.textContent =
+                    getNextNum(
+                        elReel3.textContent
+                    );
+
+
+                if (
+                    step >=
+                    spinTimeLeftRight
+                ) {
+
+                    clearInterval(interval);
+
+                    elReel1.textContent =
+                        targetLeft;
+
+                    elReel3.textContent =
+                        targetRight;
+
+
+                    if (isReach) {
+
+                        let isSpecialReachSound =
+                            false;
+
+
+                        // 通常時インフラ（※昇格演出時は鳴らさない）
+                        if (
+                            gameMode === "NORMAL" &&
+                            isWin &&
+                            currentSpinIsOdd &&
+                            !currentSpinIsUpgrade &&
+                            Math.random() <
+                                impactRates.NORMAL
+                        ) {
+
+                            isSpecialReachSound =
+                                true;
+
+                            seImpactFlash.currentTime =
+                                0;
+
+                            seImpactFlash
+                                .play()
+                                .catch(
+                                    e =>
+                                        console.log(e)
+                                );
+
+                            elEffect.textContent =
+                                "⚡🌈 インパクトフラッシュ発生！！ 🌈⚡";
+
+
+                        // ST中インフラ
+                        } else if (
+                            gameMode === "ST" &&
+                            isWin &&
+                            Math.random() <
+                                impactRates.ST
+                        ) {
+
+                            isSpecialReachSound =
+                                true;
+
+                            seImpactFlash.currentTime =
+                                0;
+
+                            seImpactFlash
+                                .play()
+                                .catch(
+                                    e =>
+                                        console.log(e)
+                                );
+
+                            elEffect.textContent =
+                                "⚡🌈 インパクトフラッシュ発生！！ 🌈⚡";
+
+
+                        // 時短中インフラ
+                        } else if (
+                            gameMode === "JITITAN" &&
+                            isWin &&
+                            Math.random() <
+                                impactRates.JITITAN
+                        ) {
+
+                            isSpecialReachSound =
+                                true;
+
+                            seImpactFlash.currentTime =
+                                0;
+
+                            seImpactFlash
+                                .play()
+                                .catch(
+                                    e =>
+                                        console.log(e)
+                                );
+
+                            elEffect.textContent =
+                                "⚡🌈 インパクトフラッシュ発生！！ 🌈⚡";
+
+
+                        } else {
+
+                            seReachNormal.currentTime =
+                                0;
+
+                            seReachNormal
+                                .play()
+                                .catch(
+                                    e =>
+                                        console.log(e)
+                                );
+
+                            elEffect.textContent =
+                                "🔥 リーチ！！ 🔥";
+                        }
+
+
+                        let centerStep = 0;
+
+                        let centerSpinTime =
+                            (gameMode === "ST")
+                                ? 25
+                                : (
+                                    gameMode === "JITITAN"
+                                        ? 15
+                                        : 50
+                                );
+
+
+                        const centerInterval =
+                            setInterval(() => {
+
+                                centerStep++;
+
+                                elReel2.textContent =
+                                    getNextNum(
+                                        elReel2.textContent
+                                    );
+
+
+                                if (
+                                    centerStep >=
+                                    centerSpinTime
+                                ) {
+
+                                    clearInterval(
+                                        centerInterval
+                                    );
+
+                                    elReel2.textContent =
+                                        targetCenter;
+
+
+                                    if (isWin) {
+
+                                        if (
+                                            !currentSpinIsOdd ||
+                                            currentSpinIsUpgrade
+                                        ) {
+
+                                            startUpgradeSequence(
+                                                targetCenter,
+                                                currentSpinIsUpgrade
+                                            );
+
+                                        } else {
+
+                                            processWinResult(
+                                                true,
+                                                targetCenter
+                                            );
+                                        }
+
+                                    } else {
+
+                                        elEffect.textContent =
+                                            "ハズレ...";
+
+                                        finishSpin();
+                                    }
+                                }
+
+                            }, 60);
+
+
+                    } else {
+
+                        elReel2.textContent =
+                            targetCenter;
+
+                        finishSpin();
+                    }
+                }
+
+            }, 50);
+    }
+
+
+    // ==========================================
+    // 再抽選（昇格 / 非昇格）演出
+    // ==========================================
+
+    function startUpgradeSequence(
+        initialNum,
+        isUpgrade
+    ) {
+
+        elEffect.textContent =
+            `【${initialNum}揃い】再抽選演出突入...！`;
+
+
+        const targetNum =
+            isUpgrade
+                ? ((initialNum % 9) + 1)
+                : initialNum;
+
+
+        setTimeout(() => {
+
+            let currentDisplay =
+                initialNum;
+
+            let scrollCount = 0;
+
+            const totalScrolls =
+                isUpgrade
+                    ? 10
+                    : 9;
+
+
+            const upgradeInterval =
+                setInterval(() => {
+
+                    scrollCount++;
+
+                    currentDisplay =
+                        (currentDisplay % 9) + 1;
+
+
+                    elReel1.textContent =
+                        currentDisplay;
+
+                    elReel2.textContent =
+                        currentDisplay;
+
+                    elReel3.textContent =
+                        currentDisplay;
+
+
+                    if (
+                        scrollCount >=
+                        totalScrolls
+                    ) {
+
+                        clearInterval(
+                            upgradeInterval
+                        );
+
+
+                        // 昇格成功
+                        if (isUpgrade) {
+
+                            elEffect.textContent =
+                                `🌈【昇格！！】${targetNum}揃い昇格！ 🌈`;
+
+                            setTimeout(() => {
+
+                                processWinResult(
+                                    true,
+                                    targetNum
+                                );
+
+                            }, 1000);
+
+
+                        // 昇格失敗
+                        } else {
+
+                            elEffect.textContent =
+                                `【${targetNum}揃い確定】`;
+
+                            setTimeout(() => {
+
+                                processWinResult(
+                                    false,
+                                    targetNum
+                                );
+
+                            }, 800);
+                        }
+                    }
+
+                }, 350);
+
+        }, 1200);
+    }
+
+
+    // ==============================
+    // 大当り確定後
+    // ==============================
+
+    function processWinResult(
+        isOddWin,
+        winNum
+    ) {
+
+        recordWinHistory(
+            isOddWin,
+            winNum
+        );
+
+
+        // 右打ち中(ST/時短)の大当りは図柄に関わらず100% ST突入
+        if (
+            isOddWin ||
+            gameMode === "ST" ||
+            gameMode === "JITITAN"
+        ) {
+
+            elEffect.textContent =
+                `【${winNum}揃い】ST「インパクトモード」突入！`;
+
+            gameMode = "ST";
+
+            modeRemains =
+                RATES.ST_TURNS;
+
+        } else {
+
+            elEffect.textContent =
+                `【${winNum}揃い】「チャンスタイム(時短100回)」突入`;
+
+            gameMode =
+                "JITITAN";
+
+            modeRemains =
+                RATES.JITITAN_TURNS;
+        }
+
+
+        finishSpin();
+    }
+
+
+    // ==============================
+    // 履歴
+    // ==============================
+
+    function recordWinHistory(
+        isOddWin,
+        winNum
+    ) {
+
+        totalWinCount++;
+
+        totalSpins = 0;
+
+        elTotalSpins.textContent =
+            totalSpins;
+
+
+        let typeName = "";
+        let cssClass = "";
+
+
+        if (gameMode === "ST") {
+
+            currentChain++;
+
+            typeName =
+                `${currentChain}連目 (ST中)`;
+
+            cssClass =
+                "tag-st";
+
+        } else if (
+            gameMode === "JITITAN"
+        ) {
+
+            currentChain++;
+
+            typeName =
+                `${currentChain}連目 (引き戻し)`;
+
+            cssClass =
+                "tag-st";
+
+        } else {
+
+            currentChain = 1;
+
+            if (isOddWin) {
+
+                typeName =
+                    "初当り (RUSH突入)";
+
+                cssClass =
+                    "tag-st";
+
+            } else {
+
+                typeName =
+                    "初当り (時短突入)";
+
+                cssClass =
+                    "tag-jititan";
+            }
+        }
+
+
+        if (
+            currentChain >
+            maxChain
+        ) {
+
+            maxChain =
+                currentChain;
+        }
+
+
+        winHistory.unshift({
+
+            count:
+                totalWinCount,
+
+            spins:
+                spinAtLastWin,
+
+            num:
+                winNum,
+
+            type:
+                typeName,
+
+            css:
+                cssClass
+
+        });
+
+
+        spinAtLastWin = 0;
+
+        updateHistoryUI();
+    }
+
+
+    // ==============================
+    // 履歴UI
+    // ==============================
+
+    function updateHistoryUI() {
+
+        elTotalWins.textContent =
+            totalWinCount;
+
+        elMaxChain.textContent =
+            maxChain;
+
+        elHistoryList.innerHTML =
+            "";
+
+
+        winHistory
+            .slice(0,10)
+            .forEach(item => {
+
+                const li =
+                    document.createElement(
+                        'li'
+                    );
+
+                li.innerHTML = `
+
+                    <span>
+                        <b class="${item.css}">
+                            ${item.type}
+                        </b>
+                        (${item.num}図柄)
+                    </span>
+
+                    <span>
+                        <b>${item.spins}</b>回転目
+                    </span>
+                `;
+
+                elHistoryList
+                    .appendChild(li);
+            });
+    }
+
+
+    // ==============================
+    // 変動終了
+    // ==============================
+
+    function finishSpin() {
+
+        if (
+            gameMode !== "NORMAL" &&
+            modeRemains <= 0
+        ) {
+
+            elEffect.textContent =
+                `${
+                    gameMode === "ST"
+                        ? "ST"
+                        : "時短"
+                }終了...`;
+
+            gameMode =
+                "NORMAL";
+
+            modeRemains =
+                0;
+
+            currentChain =
+                0;
+        }
+
+
+        if (spinStartTime > 0) {
+
+            lastSpinDuration =
+                Math.round(
+                    performance.now() -
+                    spinStartTime
+                );
+
+            console.log(
+                `[変動時間] ${lastSpinDuration}ms (${(
+                    lastSpinDuration /
+                    1000
+                ).toFixed(2)}秒)`
+            );
+        }
+
+
+        if (gameMode === "ST") {
+
+            elMode.textContent =
+                "インパクトモード (ST)";
+
+            elMode.className =
+                "mode-st";
+
+            elStCount.textContent =
+                `ST残り: ${modeRemains}回`;
+
+        } else if (
+            gameMode === "JITITAN"
+        ) {
+
+            elMode.textContent =
+                "チャンスタイム (時短)";
+
+            elMode.className =
+                "mode-jititan";
+
+            elStCount.textContent =
+                `時短残り: ${modeRemains}回`;
+
+        } else {
+
+            elMode.textContent =
+                "通常モード";
+
+            elMode.className =
+                "mode-normal";
+
+            elStCount.textContent =
+                "";
+        }
+
+
+        setTimeout(() => {
+
+            startNextSpin();
+
+        }, 800);
+    }
+
+
+    // ==============================
+    // スペースキー
+    // ==============================
+
+    window.addEventListener(
+        'keydown',
+        (e) => {
+
+            if (e.code === 'Space') {
+
+                if (
+                    e.target.tagName ===
+                    'INPUT' ||
+
+                    e.target.tagName ===
+                    'TEXTAREA'
+                ) {
+                    return;
+                }
+
+                e.preventDefault();
+
+                if (
+                    lastSpinDuration > 0
+                ) {
+
+                    console.log(
+                        `[手動確認 - 直前の変動時間] ${lastSpinDuration}ms (${(
+                            lastSpinDuration /
+                            1000
+                        ).toFixed(2)}秒)`
+                    );
+                }
+            }
+        }
+    );
+
+</script>
+
+</body>
+</html>
