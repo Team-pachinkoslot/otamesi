@@ -286,7 +286,7 @@
         </ul>
     </div>
 </div>
-<div id="version-display">Ver. 2.3.1</div>
+<div id="version-display">Ver. 2.3.0</div>
 <script>
     // 音声
     const seReachNormal = new Audio('');
@@ -360,6 +360,7 @@
     let lastSpinDuration = 0;
     let currentSpinIsUpgrade = false;
     let currentSpinIsOdd = false;
+    let currentSpinLowHold = false; // 変動開始後の残り保留が0～1個なら約2秒延長
     // HTML要素
     const elReel1 = document.getElementById('reel1');
     const elReel2 = document.getElementById('reel2');
@@ -376,18 +377,14 @@
     // 保留追加
     function addHold() {
         if (holds.length >= 4) return;
-        
-        // ST中のみ高確率(ST確率: 1/99.4)、通常時および時短中は通常確率(1/319.7)で抽選
         const currentRate = (gameMode === "ST") ? RATES.ST : RATES.NORMAL;
         const isWin = Math.random() < (1 / currentRate);
-        
         let selectedColor = 'blue';
         const rand = Math.random();
         const dist = isWin ? HOLD_DISTRIBUTION.WIN : HOLD_DISTRIBUTION.LOSE;
         if (rand < dist.GOLD) selectedColor = 'gold';
         else if (rand < dist.GOLD + dist.RED) selectedColor = 'red';
         else if (rand < dist.GOLD + dist.RED + dist.GREEN) selectedColor = 'green';
-        
         holds.push({ isWin, color: selectedColor });
         updateHoldUI();
         if (!isSpinning) startNextSpin();
@@ -425,6 +422,7 @@
         }
         isSpinning = true;
         const currentSpinData = holds.shift();
+        currentSpinLowHold = holds.length <= 1;
         currentSpinHoldColor = currentSpinData.color;
         // 液晶枠を発光
         elScreen.className = `active-${currentSpinHoldColor}`;
@@ -498,7 +496,7 @@
             [targetLeft, targetCenter, targetRight] = pattern;
         }
         let step = 0;
-        const spinTimeLeftRight = (gameMode === "ST") ? 8 : 15;
+        const spinTimeLeftRight = ((gameMode === "ST") ? 8 : 15) + (currentSpinLowHold ? 40 : 0);
         const interval = setInterval(() => {
             step++;
             elReel1.textContent = getNextNum(elReel1.textContent);
